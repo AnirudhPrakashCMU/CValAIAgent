@@ -1,0 +1,149 @@
+{
+  "brands": {
+    "stripe": {
+      "primary_color_scheme": "blue-purple-gradient",
+      "button_style": "rounded-md",
+      "animation_ease": "ease-out-sine",
+      "font_family": "sans-serif",
+      "text_color_primary": "white",
+      "border_subtle": "border-transparent"
+    },
+    "apple": {
+      "primary_color_scheme": "neutral-light-bg-dark-text",
+      "button_style": "rounded-lg",
+      "animation_ease": "ease-in-out-quart",
+      "font_family": "apple-system",
+      "text_color_primary": "gray-800",
+      "shadow_subtle": "shadow-sm",
+      "border_radius": "lg"
+    },
+    "google_material": {
+      "primary_color_scheme": "blue-600-bg-white-text",
+      "button_style": "rounded",
+      "animation_ease": "material-standard",
+      "font_family": "roboto",
+      "text_color_primary": "white",
+      "elevation": "shadow-md",
+      "ripple_effect": true
+    },
+    "microsoft_fluent": {
+      "primary_color_scheme": "blue-500-bg-white-text",
+      "button_style": "rounded",
+      "animation_ease": "ease-out-expo",
+      "font_family": "segoe-ui",
+      "text_color_primary": "white",
+      "acrylic_background": false,
+      "border_radius": "sm"
+    },
+    "tailwind_css": {
+      "primary_color_scheme": "indigo-500-bg-white-text",
+      "button_style": "rounded-md",
+      "font_family": "ui-sans-serif",
+      "utility_driven": true
+    }
+  },
+  "styles": {
+    "hover_lift": {
+      "interaction": "transform transition-transform duration-150 hover:scale-105 hover:shadow-lg"
+    },
+    "hover_subtle_scale": {
+      "interaction": "transform transition-transform duration-100 hover:scale-102"
+    },
+    "hover_brightness": {
+      "interaction": "transition-filter duration-150 hover:brightness-110"
+    },
+    "pill_button": {
+      "border_radius": "full",
+      "padding_x": "px-6",
+      "padding_y": "py-2"
+    },
+    "bounce_animation": {
+      "animation": "animate-bounce"
+    },
+    "subtle_shadow": {
+      "shadow": "shadow"
+    },
+    "medium_shadow": {
+      "shadow": "shadow-md"
+    },
+    "large_shadow": {
+      "shadow": "shadow-lg"
+    },
+    "gradient_text": {
+      "text_style": "text-transparent bg-clip-text",
+      "background_gradient_direction": "bg-gradient-to-r"
+    },
+    "neumorphic_light": {
+      "background_color": "bg-gray-100",
+      "shadow": "shadow-[inset_5px_5px_10px_#bebebe,inset_-5px_-5px_10px_#ffffff]",
+      "border_radius": "rounded-xl"
+    },
+    "neumorphic_dark": {
+      "background_color": "bg-gray-800",
+      "shadow": "shadow-[inset_5px_5px_10px_#1f2937,inset_-5px_-5px_10px_#4b5563]",
+      "border_radius": "rounded-xl",
+      "text_color_primary": "text-gray-300"
+    },
+    "card_default": {
+      "background_color": "bg-white",
+      "border_radius": "rounded-lg",
+      "padding": "p-4",
+      "shadow": "shadow-md"
+    },
+    "button_primary": {
+      "background_color": "bg-blue-500",
+      "text_color": "text-white",
+      "padding_x": "px-4",
+      "padding_y": "py-2",
+      "border_radius": "rounded-md",
+      "interaction": "hover:bg-blue-600"
+    },
+    "button_secondary": {
+      "background_color": "bg-gray-200",
+      "text_color": "text-gray-800",
+      "padding_x": "px-4",
+      "padding_y": "py-2",
+      "border_radius": "rounded-md",
+      "interaction": "hover:bg-gray-300"
+    },
+    "button_outline": {
+      "background_color": "bg-transparent",
+      "text_color": "text-blue-500",
+      "border": "border border-blue-500",
+      "padding_x": "px-4",
+      "padding_y": "py-2",
+      "border_radius": "rounded-md",
+      "interaction": "hover:bg-blue-50"
+    },
+    "text_input_default": {
+      "border": "border border-gray-300",
+      "padding_x": "px-3",
+      "padding_y": "py-2",
+      "border_radius": "rounded-md",
+      "focus_ring": "focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    },
+    "rounded_sm": {"border_radius": "sm"},
+    "rounded_md": {"border_radius": "md"},
+    "rounded_lg": {"border_radius": "lg"},
+    "rounded_full": {"border_radius": "full"}
+  },
+  "tailwind_token_map": {
+    "blue-purple-gradient": "bg-gradient-to-r from-blue-500 to-purple-600",
+    "neutral-light-bg-dark-text": "bg-gray-100 text-gray-900",
+    "blue-600-bg-white-text": "bg-blue-600 text-white",
+    "blue-500-bg-white-text": "bg-blue-500 text-white",
+    "indigo-500-bg-white-text": "bg-indigo-500 text-white",
+    "radius-sm": "rounded-sm",
+    "radius-md": "rounded-md",
+    "radius-lg": "rounded-lg",
+    "radius-full": "rounded-full",
+    "shadow-sm": "shadow-sm",
+    "shadow-md": "shadow-md",
+    "shadow-lg": "shadow-lg",
+    "shadow": "shadow",
+    "ease-out-sine": "ease-out-sine", 
+    "ease-in-out-quart": "ease-in-out-quart",
+    "material-standard": "cubic-bezier(0.4, 0.0, 0.2, 1)",
+    "ease-out-expo": "ease-out-expo"
+  }
+}

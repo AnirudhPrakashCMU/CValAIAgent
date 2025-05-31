@@ -15,7 +15,6 @@ downloads/
 eggs/
 .eggs/
 lib/
-lib60/
 lib64/
 parts/
 sdist/
@@ -237,6 +236,7 @@ public/
 
 # Vue CLI build output
 dist/
+tmp/
 
 # Angular build output
 dist/

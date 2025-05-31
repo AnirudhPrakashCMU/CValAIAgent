@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "mockpilot-design-mapper"
+version = "0.1.0"
+description = "Design Mapper service for MockPilot, translating brand/style cues into theme tokens."
+authors = ["AI Engineer <ai@example.com>"]
+license = "MIT"
+readme = "README.md" # Assuming a README will be created for this service
+packages = [{include = "design_mapper", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.0" # For a simple REST API for debugging/testing mappings
+uvicorn = {extras = ["standard"], version = "^0.30.1"} # To run the FastAPI app
+pydantic = "^2.8.2" # For data validation and models
+pydantic-settings = "^2.3.4" # For loading service configuration
+watchdog = "^4.0.1" # For monitoring mappings.json file changes and hot-reloading
+jmespath = "^1.0.1" # For querying JSON mapping data
+structlog = "^24.1.0" # For structured logging
+python-dotenv = "^1.0.1" # To load .env files (pydantic-settings also does this)
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-asyncio = "^0.23.7" # If any async tests are needed (e.g., for FastAPI endpoints)
+httpx = "^0.27.0" # For testing FastAPI endpoints
+black = "^24.4.2"
+isort = "^5.13.2"
+flake8 = "^7.1.0"
+mypy = "^1.10.1"
+# types-jmespath if available and needed
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
