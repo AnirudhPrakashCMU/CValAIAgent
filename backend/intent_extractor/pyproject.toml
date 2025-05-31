@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "mockpilot-intent-extractor"
+version = "0.1.0"
+description = "Intent Extractor service for MockPilot, identifying design intents from transcripts using regex and LLMs."
+authors = ["AI Engineer <ai@example.com>"]
+license = "MIT"
+readme = "README.md" # Assuming a README will be created for this service
+packages = [{include = "intent_extractor", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.8.2"
+pydantic-settings = "^2.3.4"
+python-dotenv = "^1.0.1"
+structlog = "^24.1.0"
+redis = {extras = ["hiredis"], version = "^5.0.7"}
+openai = "^1.35.0"
+regex = "^2024.5.15" # For advanced regular expression matching
+
+# For FastAPI if this service exposes any debug/utility endpoints (optional for a pure worker)
+# fastapi = "^0.111.0"
+# uvicorn = {extras = ["standard"], version = "^0.30.1"}
+
+# Add any models or shared utilities from the 'shared' backend package if needed
+# mockpilot-shared = {path = "../shared", develop = true} # Example
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-asyncio = "^0.23.7" # If testing async code (e.g., Redis interactions)
+black = "^24.4.2"
+isort = "^5.13.2"
+flake8 = "^7.1.0"
+mypy = "^1.10.1"
+types-redis = "^4.6.0.20240523" # If using redis
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true # Can be set to false for stricter checks if all stubs are available
+# exclude = ['src/intent_extractor/vendor/'] # Example
