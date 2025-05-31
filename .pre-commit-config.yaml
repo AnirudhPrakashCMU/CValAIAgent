@@ -1,0 +1,58 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: detect-private-key
+
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.11
+        # Apply to Python files in backend and a potential top-level tests directory
+        files: ^(backend/|tests/).*\.py$
+        args: [--line-length=88]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort (python)
+        args: ["--profile", "black", "--filter-files"]
+        # Apply to Python files in backend and a potential top-level tests directory
+        files: ^(backend/|tests/).*\.py$
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.0
+    hooks:
+      - id: flake8
+        # Apply to Python files in backend and a potential top-level tests directory
+        files: ^(backend/|tests/).*\.py$
+        args: ['--max-line-length=88', '--ignore=E203,W503']
+        # E203: whitespace before ':', W503: line break before binary operator (black compatibility)
+        # additional_dependencies: [flake8-bugbear, flake8-comprehensions] # Optional
+
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v9.7.0 # Corresponds to ESLint v9.7.0
+    hooks:
+      - id: eslint
+        # Apply to JS/TS files in the frontend directory
+        files: ^frontend/.*\.(js|jsx|ts|tsx)$
+        args: [--fix]
+        # ESLint and its plugins should be installed in frontend/node_modules
+        # Ensure `cd frontend && npm install` has been run.
+        # additional_dependencies: [] # List specific eslint plugins if not picked up from frontend/package.json
+                                   # For example:
+                                   #  - eslint-plugin-react@latest
+                                   #  - '@typescript-eslint/eslint-plugin@latest'
+                                   #  - '@typescript-eslint/parser@latest'
+                                   # It's generally better if ESLint is fully configured in frontend/

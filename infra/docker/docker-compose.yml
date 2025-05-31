@@ -1,0 +1,144 @@
+version: '3.8'
+
+# MockPilot Docker Compose Configuration
+#
+# This file sets up the development environment for MockPilot using Docker.
+# It includes Redis and stub services for key components.
+#
+# To use:
+# 1. Ensure you have an .env file in the project root (CValAIAgent/) for secrets like OPENAI_API_KEY.
+#    Example .env file:
+#    OPENAI_API_KEY=your_openai_api_key_here
+#
+# 2. Run from the project root (CValAIAgent/):
+#    docker-compose -f infra/docker/docker-compose.yml up --build
+#
+# Note: The Dockerfiles for the stub services (e.g., backend/speech_to_text/Dockerfile)
+# will need to be created. For a stub, they can be very simple, e.g.:
+# FROM alpine:latest
+# CMD ["tail", "-f", "/dev/null"]
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: mockpilot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    networks:
+      - mockpilot_network
+
+  speech_to_text:
+    build:
+      context: ../../../backend/speech_to_text
+      dockerfile: Dockerfile # Assumes Dockerfile exists in backend/speech_to_text/
+    container_name: mockpilot-speech-to-text-stub
+    command: tail -f /dev/null # Placeholder for actual service command
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY} # For Whisper
+    restart: unless-stopped
+    networks:
+      - mockpilot_network
+    # volumes: # If local code changes should reflect without rebuild (for dev)
+    #   - ../../../backend/speech_to_text:/app
+
+  orchestrator:
+    build:
+      context: ../../../backend/orchestrator
+      dockerfile: Dockerfile # Assumes Dockerfile exists in backend/orchestrator/
+    container_name: mockpilot-orchestrator-stub
+    command: tail -f /dev/null # Placeholder, e.g., uvicorn orchestrator.main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - speech_to_text
+      # Add other backend services as they are created, e.g., intent_extractor, code_generator
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY} # If orchestrator uses LLMs directly
+    restart: unless-stopped
+    networks:
+      - mockpilot_network
+    # volumes:
+    #   - ../../../backend/orchestrator:/app
+
+  frontend:
+    build:
+      context: ../../../frontend
+      dockerfile: Dockerfile # Assumes Dockerfile exists in frontend/
+    container_name: mockpilot-frontend-stub
+    command: tail -f /dev/null # Placeholder, e.g., npm run dev
+    ports:
+      - "5173:5173" # Default Vite port
+    depends_on:
+      - orchestrator
+    environment:
+      - VITE_ORCHESTRATOR_WS_URL=ws://localhost:8000/ws # Example for frontend to connect to backend
+    restart: unless-stopped
+    networks:
+      - mockpilot_network
+    # volumes:
+    #   - ../../../frontend:/app
+    #   - /app/node_modules # Exclude node_modules from host volume overwrite
+
+  # --- Other potential services (add as stubs or full services later) ---
+  # weaviate:
+  #   image: semitechnologies/weaviate:1.25.0
+  #   container_name: mockpilot-weaviate
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     QUERY_DEFAULTS_LIMIT: 25
+  #     AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+  #     PERSISTENCE_DATA_PATH: /var/lib/weaviate
+  #     DEFAULT_VECTORIZER_MODULE: none # Or 'text2vec-openai', 'text2vec-huggingface' etc.
+  #     ENABLE_MODULES: text2vec-huggingface # Adjust as needed
+  #     CLUSTER_HOSTNAME: node1
+  #     # OPENAI_APIKEY: ${OPENAI_API_KEY} # If using text2vec-openai
+  #   volumes:
+  #     - weaviate_data:/var/lib/weaviate
+  #   restart: on-failure:0
+  #   networks:
+  #     - mockpilot_network
+
+  # intent_extractor:
+  #   build:
+  #     context: ../../../backend/intent_extractor
+  #     dockerfile: Dockerfile
+  #   container_name: mockpilot-intent-extractor-stub
+  #   command: tail -f /dev/null
+  #   depends_on: [redis]
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #   restart: unless-stopped
+  #   networks: [mockpilot_network]
+
+  # code_generator:
+  #   build:
+  #     context: ../../../backend/code_generator
+  #     dockerfile: Dockerfile
+  #   container_name: mockpilot-code-generator-stub
+  #   command: tail -f /dev/null
+  #   depends_on: [redis]
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
+  #   restart: unless-stopped
+  #   networks: [mockpilot_network]
+
+volumes:
+  redis_data:
+    driver: local
+  # weaviate_data:
+  #   driver: local
+
+networks:
+  mockpilot_network:
+    driver: bridge

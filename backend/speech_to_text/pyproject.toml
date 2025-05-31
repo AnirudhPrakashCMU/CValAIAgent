@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "mockpilot-speech-to-text"
+version = "0.1.0"
+description = "Speech-to-Text service for MockPilot using Whisper and Silero VAD."
+authors = ["AI Engineer <ai@example.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "speech_to_text", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.111.0"
+uvicorn = {extras = ["standard"], version = "^0.30.1"}
+websockets = "^12.0"
+openai = "^1.35.0" # Includes Whisper functionality
+redis = {extras = ["hiredis"], version = "^5.0.7"}
+numpy = "^1.26.4"
+sounddevice = "^0.4.7" # For direct microphone access
+pydantic = "^2.8.2"
+python-dotenv = "^1.0.1"
+torch = "^2.3.1" # For Silero VAD and potentially Whisper on GPU
+torchaudio = "^2.3.1" # For Silero VAD
+async-timeout = "^4.0.3" # Useful for managing asyncio tasks and timeouts
+structlog = "^24.1.0" # For structured logging
+pydantic-settings = "^2.3.4" # For configuration management
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-asyncio = "^0.23.7"
+black = "^24.4.2"
+isort = "^5.13.2"
+flake8 = "^7.1.0"
+mypy = "^1.10.1"
+types-redis = "^4.6.0.20240523"
+httpx = "^0.27.0" # For testing FastAPI endpoints (e.g., health checks)
+# Consider adding types-sounddevice if available and needed
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true # Can be set to false for stricter checks if all stubs are available
+# exclude = ['src/speech_to_text/vendor/'] # Example: if you have vendored code
