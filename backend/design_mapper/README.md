@@ -1,12 +1,12 @@
 # Design Mapper Service – MockPilot  
-*(backend/design_mapper)*  
+*Path `backend/design_mapper/`*  
 
-Translates **brand references** (e.g. `stripe`, `apple`) and **style cues** (e.g. `hover_lift`, `pill_button`) into:
+Translates **brand references** (e.g. `stripe`, `apple`) and **style cues** (e.g. `hover_lift`, `pill_button`) into:  
 
-* **Theme tokens** – an abstract, design-system friendly representation.  
-* **Tailwind CSS utility classes** – concrete classes rendered to the frontend preview.
+* **Theme tokens** – abstract design-system primitives  
+* **Tailwind CSS utility classes** – concrete classes for the frontend preview  
 
-It is 100 % deterministic (no LLMs) and hot-reloads `mappings.json` at runtime, making it the single source of truth for design semantics inside MockPilot.
+It is **100 % deterministic** (no LLMs) and hot-reloads `mappings.json` at runtime, making it the single source-of-truth for design semantics inside MockPilot.
 
 ---
 
@@ -14,72 +14,85 @@ It is 100 % deterministic (no LLMs) and hot-reloads `mappings.json` at runtime, 
 
 ```
 backend/design_mapper/
-├── Dockerfile
-├── pyproject.toml
-├── run_service.sh
+├── Dockerfile                 # Container image
+├── run_service.sh             # Local dev helper
+├── pyproject.toml             # Poetry project
+├── README.md                  # ← you are here
 └── src/design_mapper/
-    ├── api.py           # FastAPI endpoints
-    ├── config.py        # Pydantic settings (env-driven)
-    ├── service/mapper.py
-    ├── models/schemas.py
-    └── utils/loader.py  # file watcher, hot reload
+    ├── api.py                 # FastAPI entry-point
+    ├── config.py              # Env-driven settings
+    ├── service/
+    │   └── mapper.py          # Core mapping logic
+    ├── utils/loader.py        # File watcher + hot reload
+    └── models/schemas.py      # Pydantic models
+data/
+└── mappings.json              # Brands, styles & token map
 ```
 
 ---
 
 ## 2. Configuration  
 
-All settings are environment-variable driven (see `config.py`).  
+All options are environment-variable driven (see `config.py`). Common ones:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MAPPINGS_FILE_PATH` | `data/mappings/mappings.json` | Absolute/relative path to the JSON mapping table. |
-| `ENABLE_HOT_RELOAD` | `true` | Watch the file and auto-reload when it changes. |
-| `FILE_WATCH_INTERVAL_SECONDS` | `2.0` | Polling interval for the watchdog observer. |
-| `ENABLE_LRU_CACHE` | `true` | Cache identical mapping requests (size = `LRU_CACHE_MAXSIZE`). |
-| `LOG_LEVEL` | `INFO` | Standard Python logging level. |
-| `API_VERSION` | `v1` | URL prefix for all REST routes. |
-| `API_PORT` | `8002` | Container / local listening port. |
+| `MAPPINGS_FILE_PATH` | `data/mappings.json` | Absolute/relative path to mapping file |
+| `ENABLE_HOT_RELOAD` | `true` | Watch file & reload on change |
+| `FILE_WATCH_INTERVAL_SECONDS` | `2.0` | Polling interval for watchdog |
+| `ENABLE_LRU_CACHE` | `true` | Cache identical requests |
+| `LRU_CACHE_MAXSIZE` | `100` | Max cached entries |
+| `LOG_LEVEL` | `INFO` | Logging level |
+| `API_VERSION` | `v1` | URL prefix for routes |
+| `API_PORT` | `8002` | Listening port |
+
+Create a `.env` (or use project-root `.env`) to override:
+
+```
+LOG_LEVEL=DEBUG
+MAPPINGS_FILE_PATH=/workspace/mappings.json
+```
 
 ---
 
 ## 3. Running the Service  
 
-### 3.1 Via Docker (recommended)  
+### 3.1 Docker (recommended)
 
-```bash
+```
 # From repo root
 docker compose -f infra/docker/docker-compose.yml up design_mapper
 # or standalone:
-docker build -t mockpilot-design-mapper backend/design_mapper
-docker run -p 8002:8002 -v $PWD/data/mappings:/data/mappings mockpilot-design-mapper
+cd backend/design_mapper
+docker build -t mockpilot-design-mapper .
+docker run -p 8002:8002 -v $PWD/../../data/mappings.json:/app/data/mappings.json mockpilot-design-mapper
 ```
 
-### 3.2 Locally with Poetry  
+### 3.2 Local with Poetry
 
-```bash
+```
 cd backend/design_mapper
 poetry install
 poetry run uvicorn design_mapper.api:app --reload --port 8002
 ```
 
-Hot-reload of both Python code (`--reload`) and `mappings.json` will now work.
+Hot-reload of both Python code (`--reload`) **and** `mappings.json` will now work.
 
 ---
 
 ## 4. REST API Reference  
 
-All paths are prefixed with `/<API_VERSION>` (`/v1` by default).
+All routes are prefixed with `/<API_VERSION>` (`/v1` by default).
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| **POST** | `/v1/map` | Map brands & styles → theme tokens + Tailwind classes. |
-| **POST** | `/v1/reload` | Force re-load of mapping file & clear caches. |
-| **GET** | `/v1/healthz` | Service health and mapping stats. |
+| POST | `/v1/map` | Map brands & styles → theme tokens + Tailwind classes |
+| POST | `/v1/reload` | Force reload of mapping file & clear caches |
+| GET  | `/v1/healthz` | Service health & mapping stats |
 
-### 4.1 POST /v1/map  
+### 4.1 POST `/v1/map`
 
-**Request body (`application/json`)**
+**Request**
 
 ```json
 {
@@ -89,27 +102,26 @@ All paths are prefixed with `/<API_VERSION>` (`/v1` by default).
 }
 ```
 
-**Sample response**
+**Response**
 
 ```json
 {
   "theme_tokens": {
     "primary_color_scheme": "blue-purple-gradient",
-    "button_style": "rounded-md",
-    "animation_ease": "ease-out-sine",
-    "font_family": "sans-serif",
-    "text_color_primary": "white",
-    "border_subtle": "border-transparent",
     "border_radius": "full",
     "padding_x": "px-6",
     "padding_y": "py-2",
-    "interaction": "transform transition-transform duration-150 hover:scale-105 hover:shadow-lg"
+    "interaction": "transform transition-transform duration-150 hover:scale-105 hover:shadow-lg",
+    "button_style": "rounded-md",
+    "font_family": "sans-serif",
+    "text_color_primary": "white",
+    "animation_ease": "ease-out-sine",
+    "border_subtle": "border-transparent"
   },
   "tailwind_classes": [
     "bg-gradient-to-r",
     "from-blue-500",
     "to-purple-600",
-    "rounded-md",
     "rounded-full",
     "px-6",
     "py-2",
@@ -124,23 +136,19 @@ All paths are prefixed with `/<API_VERSION>` (`/v1` by default).
 }
 ```
 
-### 4.2 POST /v1/reload  
+### 4.2 POST `/v1/reload`
 
-Reloads the file **and** clears the LRU cache.
+Reloads file **and** clears LRU cache.
 
-```bash
+```
 curl -X POST http://localhost:8002/v1/reload
+→ { "status":"success","message":"Mappings reloaded successfully" }
 ```
 
-Returns `{ "status": "success", "message": "Mappings reloaded successfully" }`.
+### 4.3 GET `/v1/healthz`
 
-### 4.3 GET /v1/healthz  
-
-```bash
+```
 curl http://localhost:8002/v1/healthz
-```
-
-```json
 {
   "status": "ok",
   "service": "design_mapper",
@@ -153,7 +161,9 @@ curl http://localhost:8002/v1/healthz
 
 ---
 
-## 5. Mapping File Schema (`mappings.json`)  
+## 5. Extending the Mapping Table  
+
+`data/mappings.json` schema:
 
 ```jsonc
 {
@@ -163,63 +173,49 @@ curl http://localhost:8002/v1/healthz
 }
 ```
 
-**Precedence order**
+Precedence when merging:
 
-1. _Style_ properties override _brand_ properties if keys overlap.  
-2. Latest item in list wins (order in request matters).  
-3. Defaults in `ThemeTokens` remain if untouched.
+1. Style properties override brand properties.  
+2. Later items in the request list override earlier ones.  
+3. Missing keys fall back to `ThemeTokens` defaults.
 
-Add new brands or styles by editing `data/mappings/mappings.json`; the service will hot-reload automatically.
+Simply edit the JSON file; if hot-reload is enabled the service will refresh automatically—no restart needed.
 
 ---
 
-## 6. Usage in Other Services  
+## 6. Testing  
 
-Python example (inside Trigger Service):
+Unit tests live under `backend/design_mapper/tests/`.
 
-```python
-import httpx
-
-async def map_design_tokens(styles, brands):
-    async with httpx.AsyncClient(base_url="http://design_mapper:8002") as client:
-        resp = await client.post("/v1/map", json={"styles": styles, "brand_refs": brands})
-        resp.raise_for_status()
-        return resp.json()
 ```
-
----
-
-## 7. Testing the Mapper  
-
-Unit tests live in `backend/design_mapper/tests/`. Run all tests:
-
-```bash
 cd backend/design_mapper
 poetry run pytest
 ```
 
 Key assertions:
-* Style + brand precedence merges as expected.
-* Tailwind class list matches snapshot.
-* Hot-reload does not alter existing outputs while loading.
+
+* Style + brand precedence merges as expected  
+* Tailwind class list matches snapshot  
+* Hot-reload does not alter existing outputs while loading  
 
 ---
 
-## 8. Troubleshooting  
+## 7. Troubleshooting  
 
 | Symptom | Checklist |
 |---------|-----------|
-| **404 Not Found** on `/v1/map` | Ensure `API_VERSION` env var matches (`v1`). |
-| Empty `tailwind_classes` | Check `tailwind_token_map` contains the needed abstract tokens. |
-| Hot-reload not triggering | Verify `ENABLE_HOT_RELOAD=true` and path in `MAPPINGS_FILE_PATH` is correct. |
-| High latency | Disable `ENABLE_LRU_CACHE=false` only for debugging; otherwise cache results. |
+| 404 on `/v1/map` | Ensure `API_VERSION` env matches (`v1`) |
+| Empty `tailwind_classes` | Confirm token exists in `tailwind_token_map` |
+| Hot-reload not triggering | `ENABLE_HOT_RELOAD=true` and correct `MAPPINGS_FILE_PATH` |
+| High latency | Disable cache only for debugging (`ENABLE_LRU_CACHE=false`) |
 
 ---
 
-## 9. Extending / Contributing  
+## 8. Contributing  
 
-1. Edit `data/mappings/mappings.json` and add your tokens.  
-2. Update unit tests & snapshots.  
-3. Commit & open PR (see root **Development Workflow**).  
+1. Fork / branch off `main`  
+2. Add/adjust tokens in `data/mappings.json`  
+3. Add tests or update snapshots  
+4. Commit with scope `design_mapper:` and open PR  
 
-Enjoy mapping! 🎨🖌️  
+Happy mapping! 🎨🖌️
