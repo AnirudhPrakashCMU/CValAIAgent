@@ -24,9 +24,14 @@ WORKDIR /app
 # Copy dependency definition files for the orchestrator service
 COPY pyproject.toml poetry.lock* ./
 
-# Install project dependencies (excluding development dependencies)
-# This will create a .venv directory in /app inside the builder stage
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install runtime dependencies first (without the project) for better caching
+RUN poetry install --without dev --no-interaction --no-ansi --no-root
+
+# Copy application source code
+COPY src/ ./src
+
+# Install the project itself
+RUN poetry install --without dev --no-interaction --no-ansi
 
 # Stage 2: Final stage (runtime)
 FROM python:3.11-slim AS final
