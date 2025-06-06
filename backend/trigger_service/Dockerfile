@@ -13,7 +13,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && apt-get remove -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY pyproject.toml poetry.lock* ./
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --without dev --no-interaction --no-ansi --no-root
+COPY src/ ./src
+RUN poetry install --without dev --no-interaction --no-ansi
 
 FROM python:3.11-slim AS final
 ENV PYTHONUNBUFFERED=1 \

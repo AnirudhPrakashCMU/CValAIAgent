@@ -24,11 +24,14 @@ WORKDIR /app
 # Copy dependency definition files
 COPY pyproject.toml poetry.lock* ./
 
-# Install project dependencies (excluding development dependencies)
-# Using --no-root because the application structure with `src` means the package itself isn't "installed" in the traditional sense
-# until the src code is copied. Or, we can install it.
-# For an application, installing the root package is fine.
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install runtime dependencies only for caching
+RUN poetry install --without dev --no-interaction --no-ansi --no-root
+
+# Copy application source
+COPY src/ ./src
+
+# Install the project itself
+RUN poetry install --without dev --no-interaction --no-ansi
 
 # Stage 2: Final stage (runtime)
 FROM python:3.11-slim AS final

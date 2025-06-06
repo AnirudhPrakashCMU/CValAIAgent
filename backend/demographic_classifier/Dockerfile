@@ -23,10 +23,9 @@ WORKDIR /app
 
 # Copy dependency definition files for the demographic classifier service
 COPY pyproject.toml poetry.lock* ./
-
-# Install project dependencies (excluding development dependencies)
-# This will create a .venv directory in /app inside the builder stage
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --without dev --no-interaction --no-ansi --no-root
+COPY src/ ./src
+RUN poetry install --without dev --no-interaction --no-ansi
 
 # Stage 2: Final stage (runtime)
 FROM python:3.11-slim AS final
