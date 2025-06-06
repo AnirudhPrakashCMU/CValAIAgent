@@ -10,7 +10,7 @@ packages = [{include = "orchestrator", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.111.0"
-uvicorn = {extras = ["standard"], version = "^0.30.1"}
+uvicorn = "^0.30.1"
 redis = {extras = ["hiredis"], version = "^5.0.7"} # hiredis for performance
 # aioredis is now part of the redis package itself for async operations.
 websockets = "^12.0" # For FastAPI WebSocket support

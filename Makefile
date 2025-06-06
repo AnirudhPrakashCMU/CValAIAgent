@@ -2,6 +2,12 @@
 
 .PHONY: help bootstrap lint lint-py lint-js test test-py test-py-unit test-py-integration test-js coverage dev up down logs build clean smoke e2e docs
 
+# Python services with individual Poetry projects
+PY_SERVICES := backend/orchestrator backend/design_mapper \
+               backend/speech_to_text backend/intent_extractor \
+               backend/code_generator backend/trigger_service \
+               backend/sentiment_miner backend/demographic_classifier
+
 # Default target
 help:
 	@echo "MockPilot Makefile"
@@ -34,23 +40,35 @@ bootstrap:
 	@echo "🚀 Bootstrapping MockPilot..."
 	@echo "  -> Installing Python dependencies with Poetry..."
 	@if command -v poetry &> /dev/null; then \
-		(cd backend && poetry install --no-root); \
+	        for d in $(PY_SERVICES); do \
+	                echo "Installing deps for $$d"; \
+	                (cd $$d && poetry install --no-root); \
+	        done; \
 	else \
-		echo "Poetry not found. Please install Poetry: https://python-poetry.org/docs/#installation"; \
-		exit 1; \
+	        echo "Poetry not found. Please install Poetry: https://python-poetry.org/docs/#installation"; \
+	        exit 1; \
 	fi
-	@echo "  -> Installing Node.js dependencies with npm..."
-	@if command -v npm &> /dev/null; then \
-		(cd frontend && npm ci); \
+	@if [ -d frontend ]; then \
+	if [ -f frontend/package.json ]; then \
+	echo "  -> Installing Node.js dependencies with npm..."; \
+	if command -v npm &> /dev/null; then \
+	(cd frontend && npm install); \
 	else \
-		echo "npm not found. Please install Node.js and npm: https://nodejs.org/"; \
-		exit 1; \
+	echo "npm not found. Please install Node.js and npm: https://nodejs.org/"; \
+	exit 1; \
+	fi; \
+	else \
+	echo "  -> No package.json; skipping npm install"; \
+	fi; \
+	else \
+	echo "  -> Skipping frontend install (no frontend directory)"; \
 	fi
+	@if [ -f scripts/setup_env.sh ]; then bash scripts/setup_env.sh; fi
 	@echo "  -> Setting up pre-commit hooks..."
 	@if command -v pre-commit &> /dev/null; then \
-		pre-commit install; \
+	        pre-commit install; \
 	else \
-		echo "pre-commit not found. Please install pre-commit: https://pre-commit.com/#install"; \
+	        echo "pre-commit not found. Please install pre-commit: https://pre-commit.com/#install"; \
 	fi
 	@echo "✅ Bootstrap complete."
 
@@ -59,7 +77,9 @@ bootstrap:
 # ==============================================================================
 lint-py:
 	@echo "🔍 Linting Python code..."
-	(cd backend && poetry run black . --check && poetry run isort . --check-only && poetry run flake8 .)
+	@for d in $(PY_SERVICES); do \
+	        (cd $$d && poetry run black . --check && poetry run isort . --check-only && poetry run flake8 .); \
+	done
 
 lint-js:
 	@echo "🔍 Linting JavaScript/TypeScript code..."
@@ -73,27 +93,39 @@ lint: lint-py lint-js
 # ==============================================================================
 test-py-unit:
 	@echo "🧪 Running Python unit tests..."
-	(cd backend && poetry run pytest tests/unit) # Assuming unit tests are in tests/unit
+	@for d in $(PY_SERVICES); do \
+	        if [ -d $$d/tests/unit ]; then (cd $$d && PYTHONPATH=$$(pwd)/src poetry run pytest tests/unit); fi; \
+	done
 
 test-py-integration:
 	@echo "🧪 Running Python integration tests..."
-	(cd backend && poetry run pytest tests/integration) # Assuming integration tests are in tests/integration
+	@for d in $(PY_SERVICES); do \
+	        if [ -d $$d/tests/integration ]; then (cd $$d && PYTHONPATH=$$(pwd)/src poetry run pytest tests/integration); fi; \
+	done
 
 test-py:
 	@echo "🧪 Running all Python tests..."
-	(cd backend && poetry run pytest)
+	@for d in $(PY_SERVICES); do \
+	        if [ -d $$d/tests ]; then (cd $$d && PYTHONPATH=$$(pwd)/src poetry run pytest); fi; \
+	done
 
 test-js:
-	@echo "🧪 Running JavaScript/TypeScript tests..."
-	(cd frontend && npm run test)
+	@if [ -d frontend ]; then \
+	        echo "🧪 Running JavaScript/TypeScript tests..."; \
+	        (cd frontend && npm run test); \
+	else \
+	        echo "No frontend directory; skipping JS tests"; \
+	fi
 
 test: test-py test-js
 	@echo "✅ All tests passed."
 
 coverage:
 	@echo "📊 Generating Python test coverage report..."
-	(cd backend && poetry run pytest --cov=./ --cov-report=xml --cov-report=html)
-	@echo "Coverage report generated in backend/htmlcov/index.html and backend/coverage.xml"
+	@for d in $(PY_SERVICES); do \
+	        (cd $$d && poetry run pytest --cov=./ --cov-append --cov-report=xml --cov-report=html); \
+	done
+	@echo "Coverage reports generated in each service directory"
 	# Add JS coverage if available, e.g., (cd frontend && npm run test -- --coverage)
 
 # ==============================================================================
