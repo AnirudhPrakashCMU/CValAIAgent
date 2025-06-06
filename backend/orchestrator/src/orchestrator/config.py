@@ -1,7 +1,7 @@
 import logging
 from typing import List, Literal, Optional
 
-from pydantic import AnyHttpUrl, Field, RedisDsn, SecretStr
+from pydantic import AnyHttpUrl, AnyUrl, Field, RedisDsn, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -66,6 +66,12 @@ class Settings(BaseSettings):
     CORS_ALLOWED_ORIGINS: List[AnyHttpUrl] = Field(
         default=["http://localhost:5173", "http://127.0.0.1:5173"], # Default Vite dev server
         description="List of allowed origins for CORS. Use ['*'] for development if needed, but be specific for production.",
+    )
+
+    # URL for forwarding audio to the Speech-to-Text service
+    STT_SERVICE_WS_URL: Optional[AnyUrl] = Field(
+        default="ws://localhost:8001/v1/stream",
+        description="WebSocket URL for the speech-to-text service",
     )
 
     # --- Service Dependencies ---

@@ -97,10 +97,10 @@ Scope covers: repository bootstrap, baseline CI/CD, **Speech-to-Text** MVP, **Or
 
 ## 5. Deliverables Checklist
 
-- [ ] Repo & CI bootstrapped  
-- [ ] Docker Compose with Redis + stub svcs  
-- [ ] STT service streaming WS + Redis publish  
-- [ ] Orchestrator WS hub relaying transcripts  
+- [x] Repo & CI bootstrapped
+- [x] Docker Compose with Redis + stub svcs
+- [x] STT service streaming WS + Redis publish
+- [x] Orchestrator WS hub relaying transcripts
 - [ ] React frontend connects & logs JSON  
 - [ ] GIF demo of end-to-end text flow  
 - [ ] Docs updated & tag `kickoff-mvp`  
