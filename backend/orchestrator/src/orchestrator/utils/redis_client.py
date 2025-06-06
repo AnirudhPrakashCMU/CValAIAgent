@@ -1,14 +1,17 @@
 import asyncio
 import json
 import logging
-from typing import AsyncGenerator, Callable, List, Optional, Any
+from typing import AsyncGenerator, Callable, List, Optional, Any, Coroutine
 
 import redis.asyncio as aioredis
 
 from ..config import settings
-from ..models.schemas import (  # Assuming these are defined for potential publishing
-    # ClientAudioChunkMessage, ClientEditComponentMessage, ClientControlMessage
-)
+# Placeholder for potential message schema imports
+# from ..models.schemas import (
+#     ClientAudioChunkMessage,
+#     ClientEditComponentMessage,
+#     ClientControlMessage,
+# )
 
 logger = logging.getLogger(settings.SERVICE_NAME + ".redis_client")
 
