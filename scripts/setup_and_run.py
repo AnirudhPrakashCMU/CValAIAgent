@@ -11,7 +11,7 @@ ENV_FILE = ROOT / ".env"
 
 PLACEHOLDERS = {
     "OPENAI_API_KEY": "your_openai_api_key_here",
-    "JWT_SECRET_KEY": "a_very_strong_and_secret_key_please_change_me",
+    "JWT_SECRET_KEY": "!!CHANGE_ME_TO_A_STRONG_RANDOM_SECRET_KEY!!",
     "MONGODB_URI": "mongodb://user:password@host:port/database?retryWrites=true&w=majority",
 }
 

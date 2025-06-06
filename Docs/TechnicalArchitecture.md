@@ -250,5 +250,5 @@ Client        Orchestrator   STT Svc   Intent   Trigger   CodeGen   Frontend
 | `REDIS_URL` | `redis://redis:6379/0` | |
 | `WEAVIATE_URL` | — | |
 | `MONGODB_URI` | — | Sentiment cache |
-| `JWT_SECRET` | dev-secret | rotate in prod |
+| `JWT_SECRET_KEY` | dev-secret | rotate in prod |
 

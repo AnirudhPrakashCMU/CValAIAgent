@@ -101,7 +101,7 @@ Scope covers: repository bootstrap, baseline CI/CD, **Speech-to-Text** MVP, **Or
 - [x] Docker Compose with Redis + stub svcs
 - [x] STT service streaming WS + Redis publish
 - [x] Orchestrator WS hub relaying transcripts
-- [ ] React frontend connects & logs JSON  
+- [x] React frontend connects & logs JSON
 - [ ] GIF demo of end-to-end text flow  
 - [ ] Docs updated & tag `kickoff-mvp`  
 

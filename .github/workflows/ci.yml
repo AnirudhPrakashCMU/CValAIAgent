@@ -15,7 +15,7 @@ jobs:
           python-version: '3.11'
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       - run: make bootstrap
       - run: make lint-py
       - run: make test-py
