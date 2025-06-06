@@ -49,15 +49,19 @@ bootstrap:
 	        exit 1; \
 	fi
 	@if [ -d frontend ]; then \
-	        echo "  -> Installing Node.js dependencies with npm..."; \
-	        if command -v npm &> /dev/null; then \
-	                (cd frontend && npm ci); \
-	        else \
-	                echo "npm not found. Please install Node.js and npm: https://nodejs.org/"; \
-	                exit 1; \
-	        fi; \
+	if [ -f frontend/package.json ]; then \
+	echo "  -> Installing Node.js dependencies with npm..."; \
+	if command -v npm &> /dev/null; then \
+	(cd frontend && npm install); \
 	else \
-	        echo "  -> Skipping frontend install (no frontend directory)"; \
+	echo "npm not found. Please install Node.js and npm: https://nodejs.org/"; \
+	exit 1; \
+	fi; \
+	else \
+	echo "  -> No package.json; skipping npm install"; \
+	fi; \
+	else \
+	echo "  -> Skipping frontend install (no frontend directory)"; \
 	fi
 	@if [ -f scripts/setup_env.sh ]; then bash scripts/setup_env.sh; fi
 	@echo "  -> Setting up pre-commit hooks..."
