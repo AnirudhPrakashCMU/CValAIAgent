@@ -1,7 +1,7 @@
 import logging
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import UJSONResponse
+from fastapi.responses import JSONResponse
 
 from .config import settings
 from .service import websocket as stt_websocket_router
@@ -35,7 +35,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",  # URL for the OpenAPI schema
         docs_url="/docs",  # URL for Swagger UI
         redoc_url="/redoc",  # URL for ReDoc
-        default_response_class=UJSONResponse,  # Use UJSON for potentially faster responses
+        default_response_class=JSONResponse,
     )
 
     # --- Event Handlers ---
