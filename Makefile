@@ -132,13 +132,14 @@ coverage:
 # DEVELOPMENT (DOCKER COMPOSE)
 # ==============================================================================
 DC_FILE := infra/docker/docker-compose.yml
-
 dev:
 	@echo "🚀 Starting MockPilot development environment (Docker Compose)..."
+	# Ensure any previous stack is stopped to avoid name conflicts
+	docker compose -f $(DC_FILE) down || true
 	docker compose -f $(DC_FILE) up --build -d # -d for detached mode
 	@echo "🔗 Frontend: http://localhost:5173 (Vite default)"
 	@echo "🔗 Backend API (Orchestrator) might be on another port, check docker-compose logs."
-	@echo "ℹ️  Run 'make logs' to see service outputs."
+	@echo "ℹ️  Run make logs to see service outputs."
 
 up: dev
 
