@@ -28,7 +28,9 @@ torchaudio = {version = "2.3.0+cpu", source = "torchcpu"}
 async-timeout = "^4.0.3" # Useful for managing asyncio tasks and timeouts
 structlog = "^24.1.0" # For structured logging
 pydantic-settings = "^2.3.4" # For configuration management
-openai-whisper = "^20231117"
+# openai-whisper was removed from the default dependencies to avoid pulling
+# in GPU-only Triton wheels. Install it manually and set WHISPER_USE_LOCAL=true
+# if you want to run Whisper locally instead of via the API.
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
