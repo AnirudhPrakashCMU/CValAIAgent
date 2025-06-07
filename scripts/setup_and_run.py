@@ -40,7 +40,7 @@ def create_env() -> None:
 
 def run(cmd: list[str]) -> None:
     print("Running:", " ".join(cmd))
-    subprocess.run(cmd, check=True)
+    subprocess.run(cmd, check=True, cwd=ROOT)
 
 def main() -> None:
     create_env()
