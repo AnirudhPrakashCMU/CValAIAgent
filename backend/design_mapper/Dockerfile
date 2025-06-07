@@ -67,8 +67,8 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expose the port the app runs on (default 8002 for design mapper as per config.py)
-COPY run_service.sh ./
-RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+COPY --chown=appuser:appuser --chmod=755 run_service.sh ./
+RUN chown -R appuser:appuser /app
 USER appuser
 EXPOSE 8002
 

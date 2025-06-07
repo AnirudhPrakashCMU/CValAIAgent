@@ -26,8 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/.venv .venv
 COPY src/ ./src
 COPY README.md ./
-COPY run_service.sh ./
-RUN chmod +x run_service.sh
+COPY --chmod=755 run_service.sh ./
 USER nobody
 EXPOSE 8004
 CMD ["bash", "run_service.sh"]

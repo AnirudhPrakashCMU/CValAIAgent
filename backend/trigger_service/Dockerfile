@@ -27,8 +27,8 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
 COPY --from=builder /app/.venv .venv
 COPY src/ ./src
-COPY run_service.sh ./
-RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+COPY --chown=appuser:appuser --chmod=755 run_service.sh ./
+RUN chown -R appuser:appuser /app
 USER appuser
 EXPOSE 8006
 CMD ["bash", "run_service.sh"]

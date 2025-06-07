@@ -58,8 +58,8 @@ COPY src/ ./src
 RUN chown -R appuser:appuser /app
 
 # Copy script and adjust ownership
-COPY run_service.sh ./
-RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+COPY --chown=appuser:appuser --chmod=755 run_service.sh ./
+RUN chown -R appuser:appuser /app
 
 # Switch to the non-root user
 USER appuser

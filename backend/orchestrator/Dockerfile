@@ -56,7 +56,7 @@ COPY --from=builder /app/.venv .venv
 # Copy the application source code for the orchestrator
 # Assumes this Dockerfile is in backend/orchestrator/ and src/ is backend/orchestrator/src/
 COPY src/ ./src
-
+COPY --chown=appuser:appuser --chmod=755 run_service.sh ./
 # Ensure the .env file will be loaded correctly if placed in /app (the WORKDIR)
 # The application's config.py uses python-dotenv which looks for .env in the current working directory.
 
@@ -67,9 +67,6 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expose the port the app runs on (default 8000 for orchestrator as per main.py example)
-COPY run_service.sh ./
-RUN chmod +x run_service.sh && chown -R appuser:appuser /app
-USER appuser
 EXPOSE 8000
 
 # Command to run the application via helper script

@@ -68,9 +68,8 @@ COPY src/ ./src
 # The application's config.py uses python-dotenv which looks for .env in the current working directory.
 
 # Change ownership to the non-root user
+COPY --chown=appuser:appuser --chmod=755 run_service.sh ./
 RUN chown -R appuser:appuser /app
-COPY run_service.sh ./
-RUN chmod +x run_service.sh && chown -R appuser:appuser /app
 USER appuser
 EXPOSE 8001
 CMD ["bash", "run_service.sh"]
