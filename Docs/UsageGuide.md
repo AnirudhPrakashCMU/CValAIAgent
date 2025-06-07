@@ -28,7 +28,7 @@ This guide walks you through the exact steps to get MockPilot running on your ma
    python3 scripts/setup_and_run.py
    ```
 2. Wait for Docker images to build and services to start. The frontend will be available at `http://localhost:5173`.
-3. Open the URL in your browser, allow microphone access and start speaking design ideas.
+3. Open the URL in your browser, allow microphone access, then click **Start** to begin streaming audio. Speak your design ideas and watch transcripts and components appear live.
 
 ## 4. Manual Setup
 
@@ -46,7 +46,7 @@ If you prefer running pieces individually:
    credentials like `OPENAI_API_KEY` are available to all services.
    You can also invoke Compose directly using
    `docker compose --env-file .env -f infra/docker/docker-compose.yml up --build`.
-3. Access the frontend at `http://localhost:5173`.
+3. Access the frontend at `http://localhost:5173`, allow microphone use and hit **Start** to begin.
 
 ## 5. Stopping the Stack
 
