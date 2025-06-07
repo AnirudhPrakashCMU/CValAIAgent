@@ -54,4 +54,3 @@ ignore_missing_imports = true # Can be set to false for stricter checks if all s
 # exclude = ['src/speech_to_text/vendor/'] # Example: if you have vendored code
 
 
-
