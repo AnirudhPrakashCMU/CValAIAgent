@@ -57,4 +57,5 @@ ignore_missing_imports = true # Can be set to false for stricter checks if all s
 [[tool.poetry.source]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
+priority = "supplemental"
 
