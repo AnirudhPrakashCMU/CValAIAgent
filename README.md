@@ -21,6 +21,7 @@ MockPilot is a meeting copilot that listens to product discussions, detects UI/U
 | Testing strategy | [Docs/TestingStrategy.md](Docs/TestingStrategy.md) |
 | Development workflow | [Docs/DevelopmentWorkflow.md](Docs/DevelopmentWorkflow.md) |
 | Component implementation guide | [Docs/ComponentImplementationGuide.md](Docs/ComponentImplementationGuide.md) |
+| Usage guide | [Docs/UsageGuide.md](Docs/UsageGuide.md) |
 
 _Read the plan first, then dive into the architecture for service-level details._
 
