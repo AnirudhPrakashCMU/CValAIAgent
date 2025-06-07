@@ -42,7 +42,10 @@ If you prefer running pieces individually:
    ```bash
    make dev
    ```
-   Or invoke `docker compose -f infra/docker/docker-compose.yml up --build` directly.
+   The Makefile explicitly passes your `.env` file to Docker Compose so
+   credentials like `OPENAI_API_KEY` are available to all services.
+   You can also invoke Compose directly using
+   `docker compose --env-file .env -f infra/docker/docker-compose.yml up --build`.
 3. Access the frontend at `http://localhost:5173`.
 
 ## 5. Stopping the Stack

@@ -75,6 +75,8 @@ your secrets:
 scripts/setup_env.sh  # creates `.env` from `.env-example` if needed
 # then edit `.env` to add your API keys
 ```
+The `make dev` command (and the setup script) pass this `.env` file to
+Docker Compose so your keys are loaded correctly.
 
 ---
 
@@ -86,7 +88,7 @@ git clone https://github.com/AnirudhPrakashCMU/CValAIAgent.git
 cd CValAIAgent
 
 # spin up full stack (backend, redis, weaviate, frontend)
-docker compose -f infra/docker/docker-compose.yml up --build
+docker compose --env-file .env -f infra/docker/docker-compose.yml up --build
 ```
 
 Open http://localhost:5173, allow microphone access, and say  
