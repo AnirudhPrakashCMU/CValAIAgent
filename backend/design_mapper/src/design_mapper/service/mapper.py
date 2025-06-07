@@ -82,13 +82,7 @@ def _merge_properties_to_tokens(
             style_tokens = _dict_to_theme_tokens(props)
             merged_tokens.update(style_tokens)
     
-    # TODO: Apply component-specific overrides if needed
-    # This could be implemented by looking up component-specific mappings
-    # if component_type:
-    #     component_properties = get_component_properties(component_type)
-    #     if component_properties:
-    #         component_tokens = _dict_to_theme_tokens(component_properties)
-    #         merged_tokens.update(component_tokens)
+    # Component-specific overrides are applied in map_request_to_tokens
     
     return merged_tokens
 
@@ -128,6 +122,12 @@ def map_request_to_tokens(request: MappingRequest) -> Tuple[ThemeTokens, List[st
             used_styles.append(style)
         else:
             logger.warning(f"Style not found in mappings: {style}")
+        if request.component:
+            comp_key = f"{request.component}_{style}"
+            comp_props = loader.get_style_properties(comp_key)
+            if comp_props:
+                style_properties.append(comp_props)
+                used_styles.append(comp_key)
     
     # Merge properties into tokens
     tokens = _merge_properties_to_tokens(

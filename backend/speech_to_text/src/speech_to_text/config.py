@@ -107,6 +107,11 @@ class Settings(BaseSettings):
         default=20.0, description="Timeout in seconds for WebSocket ping responses."
     )
 
+    WEBSOCKET_RECEIVE_TIMEOUT_S: float = Field(
+        default=5.0,
+        description="Timeout in seconds waiting for audio bytes from the client WebSocket.",
+    )
+
     model_config = SettingsConfigDict(
         env_file=".env",  # Load .env file if present
         env_file_encoding="utf-8",
