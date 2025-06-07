@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl build-essential python3-dev python3-pip \
     && pip install "poetry==1.8.3" \
     && ln -s /usr/local/bin/poetry /usr/bin/poetry \
-    && apt-get remove -y curl build-essential python3-dev python3-pip \
+    && apt-get remove -y curl python3-pip \
     && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY pyproject.toml poetry.lock* ./
