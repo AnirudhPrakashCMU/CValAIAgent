@@ -29,12 +29,24 @@ class WhisperEngine:
 
     def __init__(self, config: Optional[type(settings)] = None):
         self.config = config if config else settings
-        if not self.config.OPENAI_API_KEY or not self.config.OPENAI_API_KEY.get_secret_value():
-            logger.error("OpenAI API key is not configured.")
-            raise ValueError("OPENAI_API_KEY must be set and not empty.")
-
-        self.client = AsyncOpenAI(api_key=self.config.OPENAI_API_KEY.get_secret_value())
         self.model_name = self.config.WHISPER_MODEL_NAME
+        self.use_local = self.config.WHISPER_USE_LOCAL
+
+        if self.use_local:
+            try:
+                import whisper  # type: ignore
+            except Exception as e:
+                logger.error(f"Local whisper requested but package not available: {e}")
+                raise
+            self.local_model = whisper.load_model(self.model_name)
+            logger.info(f"WhisperEngine using local model: {self.model_name}")
+        else:
+            if not self.config.OPENAI_API_KEY or not self.config.OPENAI_API_KEY.get_secret_value():
+                logger.error("OpenAI API key is not configured.")
+                raise ValueError("OPENAI_API_KEY must be set and not empty when not using local Whisper.")
+            self.client = AsyncOpenAI(api_key=self.config.OPENAI_API_KEY.get_secret_value())
+            logger.info(f"WhisperEngine using OpenAI API model: {self.model_name}")
+
         self.sample_rate = self.config.AUDIO_SAMPLE_RATE
         self.channels = self.config.AUDIO_CHANNELS  # Should be 1 for Whisper
         self.sample_width = 2  # 16-bit PCM = 2 bytes per sample
@@ -44,7 +56,7 @@ class WhisperEngine:
         self.semaphore = asyncio.Semaphore(self.max_concurrent_tasks)
 
         logger.info(
-            f"WhisperEngine initialized with model: {self.model_name}, "
+            f"WhisperEngine initialized. Local: {self.use_local}, model: {self.model_name}, "
             f"max concurrent tasks: {self.max_concurrent_tasks}"
         )
 
@@ -120,6 +132,35 @@ class WhisperEngine:
             )
         return None
 
+    async def _transcribe_single_segment_local(
+        self, audio_segment_bytes: bytes, language: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Transcribes a single audio segment using a local Whisper model."""
+        if not audio_segment_bytes:
+            logger.warning("Attempted to transcribe empty audio segment.")
+            return None
+
+        import tempfile
+
+        in_memory_wav = self._create_in_memory_wav(audio_segment_bytes)
+        with tempfile.NamedTemporaryFile(suffix=".wav") as tmp:
+            tmp.write(in_memory_wav.read())
+            tmp.flush()
+            result = self.local_model.transcribe(
+                tmp.name,
+                language=language,
+                word_timestamps=True,
+                fp16=False,
+            )
+
+        return {
+            "text": result.get("text", ""),
+            "language": result.get("language"),
+            "duration": result.get("duration"),
+            "segments": result.get("segments"),
+            "words": result.get("words"),
+        }
+
     async def transcribe_stream(
         self,
         vad_segment_provider: AsyncGenerator[bytes, None],
@@ -138,9 +179,14 @@ class WhisperEngine:
                     f"Available slots: {self.semaphore._value}"
                 )
                 try:
-                    return await self._transcribe_single_segment_api(
-                        segment_bytes, language
-                    )
+                    if self.use_local:
+                        return await self._transcribe_single_segment_local(
+                            segment_bytes, language
+                        )
+                    else:
+                        return await self._transcribe_single_segment_api(
+                            segment_bytes, language
+                        )
                 finally:
                     # Log semaphore state after release (implicitly handled by 'async with')
                     logger.debug(
@@ -222,8 +268,11 @@ async def _main_whisper_engine_test():
     """Main function to test the WhisperEngine class."""
     global settings # Allow modification of the global settings instance after .env load
 
-    if not settings.OPENAI_API_KEY or not settings.OPENAI_API_KEY.get_secret_value() or \
-       "your_openai_api_key_here" in settings.OPENAI_API_KEY.get_secret_value(): # Check for placeholder
+    if not settings.WHISPER_USE_LOCAL and (
+        not settings.OPENAI_API_KEY
+        or not settings.OPENAI_API_KEY.get_secret_value()
+        or "your_openai_api_key_here" in settings.OPENAI_API_KEY.get_secret_value()
+    ):
         logger.error(
             "OpenAI API key not set or is a placeholder. Please set a valid OPENAI_API_KEY in .env or environment."
         )
