@@ -67,8 +67,10 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expose the port the app runs on (default 8000 for orchestrator as per main.py example)
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+USER appuser
 EXPOSE 8000
 
-# Command to run the application
-# Uvicorn will serve the FastAPI app defined in orchestrator.main (src/orchestrator/main.py)
-CMD ["uvicorn", "orchestrator.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the application via helper script
+CMD ["bash", "run_service.sh"]

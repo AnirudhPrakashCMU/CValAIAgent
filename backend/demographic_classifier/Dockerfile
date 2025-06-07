@@ -57,12 +57,15 @@ COPY src/ ./src
 # Change ownership of the app directory to the non-root user
 RUN chown -R appuser:appuser /app
 
+# Copy script and adjust ownership
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+
 # Switch to the non-root user
 USER appuser
 
 # Expose the port the app runs on (default 8005 for demographic classifier)
 EXPOSE 8005
 
-# Command to run the application
-# Uvicorn will serve the FastAPI app defined in demographic_classifier.main (src/demographic_classifier/main.py)
-CMD ["uvicorn", "demographic_classifier.main:app", "--host", "0.0.0.0", "--port", "8005"]
+# Command to run the application using the helper script
+CMD ["bash", "run_service.sh"]

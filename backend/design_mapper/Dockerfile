@@ -67,8 +67,10 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expose the port the app runs on (default 8002 for design mapper as per config.py)
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+USER appuser
 EXPOSE 8002
 
-# Command to run the application
-# Uvicorn will serve the FastAPI app defined in design_mapper.api (src/design_mapper/api.py)
-CMD ["uvicorn", "design_mapper.api:app", "--host", "0.0.0.0", "--port", "8002"]
+# Command to run the application via helper script
+CMD ["bash", "run_service.sh"]

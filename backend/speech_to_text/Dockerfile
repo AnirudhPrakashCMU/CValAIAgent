@@ -69,15 +69,8 @@ COPY src/ ./src
 
 # Change ownership to the non-root user
 RUN chown -R appuser:appuser /app
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
 USER appuser
-
-# Expose the port the app runs on (as defined in main.py or Uvicorn command)
 EXPOSE 8001
-
-# Command to run the application
-# Note: The command uses `speech_to_text.main:app` because the `src` directory is added to PYTHONPATH
-# by virtue of how Poetry structures projects and how Uvicorn discovers modules.
-# If running from /app, and `src` is directly under /app, then `src.speech_to_text.main:app` might be needed,
-# or adjust PYTHONPATH. With `packages = [{include = "speech_to_text", from = "src"}]` in pyproject.toml,
-# and the venv activated, `speech_to_text.main` should be discoverable.
-CMD ["uvicorn", "speech_to_text.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["bash", "run_service.sh"]

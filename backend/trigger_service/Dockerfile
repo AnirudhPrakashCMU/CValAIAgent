@@ -27,7 +27,8 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
 COPY --from=builder /app/.venv .venv
 COPY src/ ./src
-RUN chown -R appuser:appuser /app
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
 USER appuser
 EXPOSE 8006
-CMD ["uvicorn", "trigger_service.main:app", "--host", "0.0.0.0", "--port", "8006"]
+CMD ["bash", "run_service.sh"]

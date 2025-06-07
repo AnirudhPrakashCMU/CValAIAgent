@@ -26,6 +26,8 @@ WORKDIR /app
 COPY --from=builder /app/.venv .venv
 COPY src/ ./src
 COPY README.md ./
+COPY run_service.sh ./
+RUN chmod +x run_service.sh
 USER nobody
 EXPOSE 8004
-CMD ["uvicorn", "sentiment_miner.main:app", "--host", "0.0.0.0", "--port", "8004"]
+CMD ["bash", "run_service.sh"]
