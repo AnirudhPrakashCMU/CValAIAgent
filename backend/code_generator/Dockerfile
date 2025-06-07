@@ -8,10 +8,10 @@ ENV POETRY_VERSION=1.8.3 \
     POETRY_VIRTUALENVS_IN_PROJECT=true
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl build-essential python3-dev \
-    && curl -sSL https://install.python-poetry.org | python3 - \
-    && ln -s /opt/poetry/bin/poetry /usr/local/bin/poetry \
-    && apt-get remove -y curl build-essential python3-dev \
+        curl build-essential python3-dev python3-pip \
+    && pip install "poetry==1.8.3" \
+    && ln -s /usr/local/bin/poetry /usr/bin/poetry \
+    && apt-get remove -y curl build-essential python3-dev python3-pip \
     && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
