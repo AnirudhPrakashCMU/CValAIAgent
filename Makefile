@@ -4,9 +4,9 @@
 
 # Python services with individual Poetry projects
 PY_SERVICES := backend/orchestrator backend/design_mapper \
-               backend/speech_to_text backend/intent_extractor \
-               backend/code_generator backend/trigger_service \
-               backend/sentiment_miner backend/demographic_classifier
+	        backend/speech_to_text backend/intent_extractor \
+	        backend/code_generator backend/trigger_service \
+	        backend/sentiment_miner backend/demographic_classifier
 
 # Default target
 help:
@@ -132,10 +132,21 @@ coverage:
 # DEVELOPMENT (DOCKER COMPOSE)
 # ==============================================================================
 DC_FILE := infra/docker/docker-compose.yml
+# Container names defined in docker-compose.yml so we can clean them up if
+# leftover containers exist from previous runs or different compose projects.
+DC_CONTAINERS := \
+	mockpilot-redis mockpilot-weaviate mockpilot-mongodb \
+	mockpilot-orchestrator mockpilot-speech-to-text \
+	mockpilot-intent-extractor mockpilot-design-mapper \
+	mockpilot-code-generator mockpilot-sentiment-miner \
+	mockpilot-demographic-classifier mockpilot-frontend
+
 dev:
 	@echo "🚀 Starting MockPilot development environment (Docker Compose)..."
 	# Ensure any previous stack is stopped to avoid name conflicts
 	docker compose -f $(DC_FILE) down || true
+	# Remove lingering containers that might not belong to this compose project
+	-docker rm -f $(DC_CONTAINERS) 2>/dev/null || true
 	docker compose -f $(DC_FILE) up --build -d # -d for detached mode
 	@echo "🔗 Frontend: http://localhost:5173 (Vite default)"
 	@echo "🔗 Backend API (Orchestrator) might be on another port, check docker-compose logs."
