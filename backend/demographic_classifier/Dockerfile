@@ -13,20 +13,21 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true
 
 # Install Poetry
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && curl -sSL https://install.python-poetry.org | python3 - \
-    && ln -s /opt/poetry/bin/poetry /usr/local/bin/poetry \
-    && apt-get remove -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl build-essential python3-dev python3-pip \
+    && pip install "poetry==1.8.3" \
+    && ln -s /usr/local/bin/poetry /usr/bin/poetry \
+    && apt-get remove -y curl python3-pip \
+    && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
 # Copy dependency definition files for the demographic classifier service
 COPY pyproject.toml poetry.lock* ./
-
-# Install project dependencies (excluding development dependencies)
-# This will create a .venv directory in /app inside the builder stage
-RUN poetry install --no-dev --no-interaction --no-ansi
+RUN poetry install --without dev --no-interaction --no-ansi --no-root
+COPY src/ ./src
+RUN poetry install --without dev --no-interaction --no-ansi
 
 # Stage 2: Final stage (runtime)
 FROM python:3.11-slim AS final
@@ -56,12 +57,15 @@ COPY src/ ./src
 # Change ownership of the app directory to the non-root user
 RUN chown -R appuser:appuser /app
 
+# Copy script and adjust ownership
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+
 # Switch to the non-root user
 USER appuser
 
 # Expose the port the app runs on (default 8005 for demographic classifier)
 EXPOSE 8005
 
-# Command to run the application
-# Uvicorn will serve the FastAPI app defined in demographic_classifier.main (src/demographic_classifier/main.py)
-CMD ["uvicorn", "demographic_classifier.main:app", "--host", "0.0.0.0", "--port", "8005"]
+# Command to run the application using the helper script
+CMD ["bash", "run_service.sh"]

@@ -8,7 +8,7 @@ version: '3.8'
 # To use:
 # 1. Ensure you have an .env file in the project root with required secrets:
 #    OPENAI_API_KEY=your_openai_api_key_here
-#    JWT_SECRET=your_jwt_secret_here
+#    JWT_SECRET_KEY=your_jwt_secret_here
 #
 # 2. Run from the project root:
 #    docker-compose -f infra/docker/docker-compose.yml up --build
@@ -74,7 +74,7 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - JWT_SECRET=${JWT_SECRET:-development_jwt_secret}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development_jwt_secret}
       - API_VERSION=v1
       - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://frontend:5173
     volumes:

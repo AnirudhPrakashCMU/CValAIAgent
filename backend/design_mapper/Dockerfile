@@ -13,10 +13,12 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true
 
 # Install Poetry
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && curl -sSL https://install.python-poetry.org | python3 - \
-    && ln -s /opt/poetry/bin/poetry /usr/local/bin/poetry \
-    && apt-get remove -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl build-essential python3-dev python3-pip \
+    && pip install "poetry==1.8.3" \
+    && ln -s /usr/local/bin/poetry /usr/bin/poetry \
+    && apt-get remove -y curl python3-pip \
+    && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -24,9 +26,14 @@ WORKDIR /app
 # Copy dependency definition files for the design mapper service
 COPY pyproject.toml poetry.lock* ./
 
-# Install project dependencies (excluding development dependencies)
-# This will create a .venv directory in /app inside the builder stage
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install runtime dependencies first, skipping the project for caching
+RUN poetry install --without dev --no-interaction --no-ansi --no-root
+
+# Copy application source code
+COPY src/ ./src
+
+# Install the project itself
+RUN poetry install --without dev --no-interaction --no-ansi
 
 # Stage 2: Final stage (runtime)
 FROM python:3.11-slim AS final
@@ -60,8 +67,10 @@ RUN chown -R appuser:appuser /app
 USER appuser
 
 # Expose the port the app runs on (default 8002 for design mapper as per config.py)
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
+USER appuser
 EXPOSE 8002
 
-# Command to run the application
-# Uvicorn will serve the FastAPI app defined in design_mapper.api (src/design_mapper/api.py)
-CMD ["uvicorn", "design_mapper.api:app", "--host", "0.0.0.0", "--port", "8002"]
+# Command to run the application via helper script
+CMD ["bash", "run_service.sh"]

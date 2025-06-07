@@ -10,7 +10,7 @@ packages = [{include = "speech_to_text", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.111.0"
-uvicorn = {extras = ["standard"], version = "^0.30.1"}
+uvicorn = "^0.30.1"
 websockets = "^12.0"
 openai = "^1.35.0" # Includes Whisper functionality
 redis = {extras = ["hiredis"], version = "^5.0.7"}
@@ -18,8 +18,8 @@ numpy = "^1.26.4"
 sounddevice = "^0.4.7" # For direct microphone access
 pydantic = "^2.8.2"
 python-dotenv = "^1.0.1"
-torch = "^2.3.1" # For Silero VAD and potentially Whisper on GPU
-torchaudio = "^2.3.1" # For Silero VAD
+torch = "2.2.2"
+torchaudio = "2.2.2"
 async-timeout = "^4.0.3" # Useful for managing asyncio tasks and timeouts
 structlog = "^24.1.0" # For structured logging
 pydantic-settings = "^2.3.4" # For configuration management
@@ -52,3 +52,6 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true # Can be set to false for stricter checks if all stubs are available
 # exclude = ['src/speech_to_text/vendor/'] # Example: if you have vendored code
+
+
+

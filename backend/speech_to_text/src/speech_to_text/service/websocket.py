@@ -1,7 +1,8 @@
 import asyncio
 import logging
 import uuid  # For utterance IDs
-import math # For confidence score conversion if needed
+import math  # For confidence score conversion if needed
+import time
 
 from fastapi import APIRouter, Path, WebSocket, WebSocketDisconnect
 from starlette import status as http_status # For WebSocket close codes
@@ -78,9 +79,16 @@ async def websocket_endpoint(
         async def audio_bytes_from_websocket_producer():
             try:
                 while True:
-                    # TODO: Consider adding a timeout for websocket.receive_bytes()
-                    # to handle cases where client stops sending data without disconnecting.
-                    audio_data = await websocket.receive_bytes()
+                    try:
+                        audio_data = await asyncio.wait_for(
+                            websocket.receive_bytes(),
+                            timeout=settings.WEBSOCKET_RECEIVE_TIMEOUT_S,
+                        )
+                    except asyncio.TimeoutError:
+                        logger.warning(
+                            f"[{client_id_str}] No audio received for {settings.WEBSOCKET_RECEIVE_TIMEOUT_S}s; closing WebSocket."
+                        )
+                        raise WebSocketDisconnect(code=http_status.WS_1001_GOING_AWAY)
                     if not audio_data: # Should not happen with receive_bytes unless client sends empty binary frame
                         logger.debug(f"[{client_id_str}] Received empty audio data packet, skipping.")
                         continue
@@ -111,7 +119,8 @@ async def websocket_endpoint(
         async def audio_processing_pipeline():
             current_utterance_id = uuid.uuid4()
             # Tracks the start time of the current transcript segment relative to the current utterance.
-            current_utterance_segment_start_time_s = 0.0 
+            current_utterance_segment_start_time_s = 0.0
+            session_start_time = time.time()
 
             # Setting up the stream processing chain
             vad_input_audio_stream = audio_bytes_from_websocket_producer()
@@ -156,8 +165,8 @@ async def websocket_endpoint(
                     final_msg_for_redis = TranscriptMessage(
                         utterance_id=current_utterance_id,
                         text=final_msg_to_client.text,
-                        ts_start=final_msg_to_client.ts_start, # These are utterance-relative for now
-                        ts_end=final_msg_to_client.ts_end,     # TODO: Consider absolute timestamps for Redis if global timeline needed
+                        ts_start=session_start_time + final_msg_to_client.ts_start,
+                        ts_end=session_start_time + final_msg_to_client.ts_end,
                         speaker=final_msg_to_client.speaker,
                         confidence=final_msg_to_client.confidence,
                     )

@@ -3,7 +3,7 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import UJSONResponse
+from fastapi.responses import JSONResponse
 
 from orchestrator.config import settings
 from orchestrator.utils.redis_client import RedisClient
@@ -44,7 +44,7 @@ def create_app() -> FastAPI:
         openapi_url=f"/{settings.API_VERSION}/openapi.json",  # OpenAPI schema URL, prefixed with API version
         docs_url=f"/{settings.API_VERSION}/docs",  # Swagger UI
         redoc_url=f"/{settings.API_VERSION}/redoc",  # ReDoc
-        default_response_class=UJSONResponse,  # Use UJSON for potentially faster responses
+        default_response_class=JSONResponse,
     )
 
     # --- CORS Middleware ---

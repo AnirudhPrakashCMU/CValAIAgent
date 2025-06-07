@@ -62,10 +62,18 @@ CValAIAgent/
 
 ## ✅ Prerequisites
 
-* **Docker ≥ 24** (for all-in-one local dev).  
-* **Python 3.11** with **Poetry** (if running services natively).  
-* **Node 20** with **npm ≥ 9** (frontend).  
+* **Docker ≥ 24** (for all-in-one local dev).
+* **Python 3.11** with **Poetry** (if running services natively).
+* **Node 20** with **npm ≥ 9** (frontend).
 * `OPENAI_API_KEY` environment variable for Whisper + GPT.
+
+Before running any services, copy the provided environment template and fill in
+your secrets:
+
+```bash
+scripts/setup_env.sh  # creates `.env` from `.env-example` if needed
+# then edit `.env` to add your API keys
+```
 
 ---
 
