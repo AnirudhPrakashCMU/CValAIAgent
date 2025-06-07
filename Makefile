@@ -144,9 +144,11 @@ DC_CONTAINERS := \
 dev:
 	@echo "🚀 Starting MockPilot development environment (Docker Compose)..."
 	# Ensure any previous stack is stopped to avoid name conflicts
-	docker compose -f $(DC_FILE) down || true
-	# Remove lingering containers that might not belong to this compose project
+	docker compose -f $(DC_FILE) down --volumes --remove-orphans || true
+# Remove lingering containers that might not belong to this compose project
 	-docker rm -f $(DC_CONTAINERS) 2>/dev/null || true
+# Remove leftover network to avoid name conflicts
+	-docker network rm mockpilot_network 2>/dev/null || true
 	docker compose -f $(DC_FILE) up --build -d # -d for detached mode
 	@echo "🔗 Frontend: http://localhost:5173 (Vite default)"
 	@echo "🔗 Backend API (Orchestrator) might be on another port, check docker-compose logs."
