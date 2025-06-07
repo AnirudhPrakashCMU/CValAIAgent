@@ -13,10 +13,12 @@ ENV PYTHONUNBUFFERED=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true
 
 # Install Poetry
-RUN apt-get update && apt-get install -y --no-install-recommends curl \
-    && curl -sSL https://install.python-poetry.org | python3 - \
-    && ln -s /opt/poetry/bin/poetry /usr/local/bin/poetry \
-    && apt-get remove -y curl && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl build-essential python3-dev python3-pip \
+    && pip install "poetry==1.8.3" \
+    && ln -s /usr/local/bin/poetry /usr/bin/poetry \
+    && apt-get remove -y curl python3-pip \
+    && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -24,11 +26,14 @@ WORKDIR /app
 # Copy dependency definition files
 COPY pyproject.toml poetry.lock* ./
 
-# Install project dependencies (excluding development dependencies)
-# Using --no-root because the application structure with `src` means the package itself isn't "installed" in the traditional sense
-# until the src code is copied. Or, we can install it.
-# For an application, installing the root package is fine.
-RUN poetry install --no-dev --no-interaction --no-ansi
+# Install runtime dependencies only for caching
+RUN poetry install --without dev --no-interaction --no-ansi --no-root
+
+# Copy application source
+COPY src/ ./src
+
+# Install the project itself
+RUN poetry install --without dev --no-interaction --no-ansi
 
 # Stage 2: Final stage (runtime)
 FROM python:3.11-slim AS final
@@ -64,15 +69,8 @@ COPY src/ ./src
 
 # Change ownership to the non-root user
 RUN chown -R appuser:appuser /app
+COPY run_service.sh ./
+RUN chmod +x run_service.sh && chown -R appuser:appuser /app
 USER appuser
-
-# Expose the port the app runs on (as defined in main.py or Uvicorn command)
 EXPOSE 8001
-
-# Command to run the application
-# Note: The command uses `speech_to_text.main:app` because the `src` directory is added to PYTHONPATH
-# by virtue of how Poetry structures projects and how Uvicorn discovers modules.
-# If running from /app, and `src` is directly under /app, then `src.speech_to_text.main:app` might be needed,
-# or adjust PYTHONPATH. With `packages = [{include = "speech_to_text", from = "src"}]` in pyproject.toml,
-# and the venv activated, `speech_to_text.main` should be discoverable.
-CMD ["uvicorn", "speech_to_text.main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["bash", "run_service.sh"]

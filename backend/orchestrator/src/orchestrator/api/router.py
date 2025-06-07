@@ -6,18 +6,19 @@ from fastapi import APIRouter, HTTPException, Path, status
 
 from ..config import settings
 from ..models.schemas import (
-    AppBaseModel, # For generic responses if needed
+    AppBaseModel,
     SessionCreateResponse,
     SessionSummary,
-    # Token, # If session creation also returns a token
+    Token,
 )
-# from ..utils import security # Placeholder for JWT token generation/validation utils
+from ..utils import security
 
 logger = logging.getLogger(settings.SERVICE_NAME + ".api_router")
 
 # Using API_VERSION from settings to prefix routes for consistency.
 # Example: /v1/healthz, /v1/sessions
 router = APIRouter(prefix=f"/{settings.API_VERSION}")
+
 
 # --- Health Check Endpoint ---
 class HealthResponse(AppBaseModel):
@@ -47,7 +48,7 @@ async def health_check():
 # In a real application, session data might be stored in Redis or a database.
 # For this hackathon, we might keep it simple or use Redis for session tracking.
 # For now, session creation is very basic.
-active_sessions: dict[UUID, SessionSummary] = {} # In-memory store for demo purposes
+active_sessions: dict[UUID, SessionSummary] = {}  # In-memory store for demo purposes
 
 
 @router.post(
@@ -64,23 +65,22 @@ async def create_new_session():
     """
     session_id = uuid4()
     now = datetime.utcnow()
-    
+
     # Store basic session info (in-memory for now)
     active_sessions[session_id] = SessionSummary(
         session_id=session_id,
         created_at=now,
         last_activity_at=now,
         transcript_snippets=[],
-        generated_components_count=0
+        generated_components_count=0,
     )
     logger.info(f"New session created: {session_id}")
-    
-    # Optionally, generate and return a JWT token for this session
-    # access_token = security.create_access_token(data={"sub": str(session_id), "scopes": ["session:active"]})
-    # token_response = Token(access_token=access_token, token_type="bearer")
-    # return SessionCreateResponse(session_id=session_id, token=token_response)
-    
-    return SessionCreateResponse(session_id=session_id)
+
+    access_token = security.create_access_token(
+        {"sub": str(session_id), "scopes": ["session:active"]}
+    )
+    token_response = Token(access_token=access_token)
+    return SessionCreateResponse(session_id=session_id, token=token_response)
 
 
 @router.get(
@@ -104,15 +104,28 @@ async def get_session_summary(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Session with ID '{session_id}' not found.",
         )
-    
+
     # Update last activity (example)
     session_data.last_activity_at = datetime.utcnow()
     logger.info(f"Returning summary for session: {session_id}")
     return session_data
 
-# TODO: Add more endpoints as needed, e.g.,
-# - POST /sessions/{session_id}/action (e.g., trigger mockup generation manually)
-# - DELETE /sessions/{session_id} (to explicitly end a session)
+
+@router.delete(
+    "/sessions/{session_id}",
+    tags=["Session Management"],
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_session(session_id: UUID = Path(..., description="ID of the session to delete")):
+    if session_id not in active_sessions:
+        raise HTTPException(status_code=404, detail="Session not found")
+    active_sessions.pop(session_id, None)
+    logger.info(f"Session deleted: {session_id}")
+    return
+
+
+# Additional endpoints can be added as needed, e.g.,
+# - POST /sessions/{session_id}/action (manual mockup generation)
 
 # Example of how this router would be included in the main FastAPI app:
 # from .api import router as api_router_v1

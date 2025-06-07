@@ -10,7 +10,7 @@ packages = [{include = "design_mapper", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.111.0" # For a simple REST API for debugging/testing mappings
-uvicorn = {extras = ["standard"], version = "^0.30.1"} # To run the FastAPI app
+uvicorn = "^0.30.1" # To run the FastAPI app
 pydantic = "^2.8.2" # For data validation and models
 pydantic-settings = "^2.3.4" # For loading service configuration
 watchdog = "^4.0.1" # For monitoring mappings.json file changes and hot-reloading
