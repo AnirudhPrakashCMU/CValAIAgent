@@ -75,6 +75,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-development_jwt_secret}
+      - STT_SERVICE_WS_URL=${STT_SERVICE_WS_URL:-ws://speech_to_text:8001/v1/stream}
       - API_VERSION=v1
       - CORS_ALLOWED_ORIGINS=http://localhost:5173,http://frontend:5173
     volumes:
