@@ -8,13 +8,14 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on \
+    PIP_INDEX_URL=https://pypi.org/simple \
     POETRY_VERSION=1.8.3 \
     POETRY_HOME="/opt/poetry" \
     POETRY_VIRTUALENVS_IN_PROJECT=true
 
 # Install Poetry
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl build-essential python3-dev python3-pip \
+        curl build-essential python3-dev python3-pip ffmpeg \
     && pip install "poetry==1.8.3" \
     && ln -s /usr/local/bin/poetry /usr/bin/poetry \
     && apt-get remove -y curl python3-pip \
@@ -43,9 +44,10 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH="/app/.venv/bin:$PATH"
 
-# Install runtime system dependencies (if any).
-# For example, if `sounddevice` was needed (it's not for a typical server processing WebSocket audio):
-# RUN apt-get update && apt-get install -y libportaudio2 && rm -rf /var/lib/apt/lists/*
+# Install runtime system dependencies.
+# ffmpeg is required for local whisper audio processing.
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 # Torch and torchaudio are installed via pip by Poetry, their wheels usually bundle necessary libs.
 
 # Create a non-root user and group
