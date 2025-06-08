@@ -21,6 +21,7 @@ MockPilot is a meeting copilot that listens to product discussions, detects UI/U
 | Testing strategy | [Docs/TestingStrategy.md](Docs/TestingStrategy.md) |
 | Development workflow | [Docs/DevelopmentWorkflow.md](Docs/DevelopmentWorkflow.md) |
 | Component implementation guide | [Docs/ComponentImplementationGuide.md](Docs/ComponentImplementationGuide.md) |
+| Usage guide | [Docs/UsageGuide.md](Docs/UsageGuide.md) |
 
 _Read the plan first, then dive into the architecture for service-level details._
 
@@ -74,6 +75,13 @@ your secrets:
 scripts/setup_env.sh  # creates `.env` from `.env-example` if needed
 # then edit `.env` to add your API keys
 ```
+The `make dev` command (and the setup script) pass this `.env` file to
+Docker Compose so your keys are loaded correctly.
+Most users can leave `STT_SERVICE_WS_URL` at its default
+(`ws://speech_to_text:8001/v1/stream`) which points to the speech-to-text
+container when using Docker Compose.
+Set `WHISPER_USE_LOCAL=true` in `.env` if you want to run Whisper locally
+instead of calling the OpenAI API.
 
 ---
 
@@ -85,7 +93,7 @@ git clone https://github.com/AnirudhPrakashCMU/CValAIAgent.git
 cd CValAIAgent
 
 # spin up full stack (backend, redis, weaviate, frontend)
-docker compose -f infra/docker/docker-compose.yml up --build
+docker compose --env-file .env -f infra/docker/docker-compose.yml up --build
 ```
 
 Open http://localhost:5173, allow microphone access, and say  
