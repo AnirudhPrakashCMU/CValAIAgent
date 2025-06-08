@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 
 from .config import settings
 from .service import websocket as stt_websocket_router
+from .service import http as stt_http_router
 
 # Configure logging (already done in config.py, but good to have a logger instance here)
 logger = logging.getLogger(settings.SERVICE_NAME + ".main")
@@ -70,12 +71,15 @@ def create_app() -> FastAPI:
         return {"status": "ok", "service": API_TITLE, "version": API_VERSION}
 
     # --- Include Routers ---
-    # The WebSocket router from service.websocket handles the /v1/stream endpoint.
-    # No additional prefix is added here, so paths are as defined in the router.
+    # The WebSocket router from service.websocket handles /v1/stream.
     app.include_router(
         stt_websocket_router.router,
         tags=["Speech-to-Text Streaming"],
-        # prefix="/api/stt" # Uncomment if you want all STT routes under a common prefix
+    )
+    # Simple HTTP endpoint for complete file transcription
+    app.include_router(
+        stt_http_router.router,
+        tags=["Speech-to-Text HTTP"],
     )
 
     logger.info("FastAPI application configured with WebSocket router and health check.")
