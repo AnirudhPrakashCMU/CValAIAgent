@@ -22,7 +22,9 @@ This guide walks you through the exact steps to get MockPilot running on your ma
 2. Open the newly created `.env` in your editor and replace all placeholders (e.g. `OPENAI_API_KEY=...`, `JWT_SECRET_KEY=...`, `MONGODB_URI=...`). Save the file.
    The default `STT_SERVICE_WS_URL` of `ws://speech_to_text:8001/v1/stream`
    works when running the stack via Docker Compose. Change it only if your
-   speech-to-text service uses a different host or port. Set `WHISPER_USE_LOCAL=true`
+   speech-to-text service uses a different host or port. `VITE_STT_HTTP_URL`
+   must be reachable from your browser; with Docker Compose this should be
+   `http://localhost:8001`. Set `WHISPER_USE_LOCAL=true`
    if you want the speech-to-text service to run Whisper locally instead of using
    the OpenAI API. Alternatively set `STT_PROVIDER=deepgram` and provide
    `DEEPGRAM_API_KEY` if you prefer Deepgram for transcription.
@@ -52,7 +54,7 @@ If you prefer running pieces individually:
    credentials like `OPENAI_API_KEY` are available to all services.
    You can also invoke Compose directly using
    `docker compose --env-file .env -f infra/docker/docker-compose.yml up --build`.
-3. Access the frontend at `http://localhost:5173`, allow microphone use and hit **Start** to begin. Hit **Stop** to end recording. The clip will appear for playback and a request is sent to `$VITE_STT_HTTP_URL/v1/transcribe` to generate a transcript.
+3. Access the frontend at `http://localhost:5173`, allow microphone use and hit **Start** to begin. Hit **Stop** to end recording. The clip will appear for playback and a request is sent to `$VITE_STT_HTTP_URL/v1/transcribe` (usually `http://localhost:8001`) to generate a transcript.
 
 ## 5. Stopping the Stack
 

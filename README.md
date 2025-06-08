@@ -80,7 +80,8 @@ Docker Compose so your keys are loaded correctly.
 Most users can leave `STT_SERVICE_WS_URL` at its default
 (`ws://speech_to_text:8001/v1/stream`) which points to the speech-to-text
 container when using Docker Compose.
-Set `VITE_STT_HTTP_URL` to the HTTP address of the speech-to-text service so the
+`VITE_STT_HTTP_URL` must be reachable from **your browser**. When running the
+stack locally via Docker Compose, set it to `http://localhost:8001` so the
 frontend can POST recorded clips for transcription.
 Set `WHISPER_USE_LOCAL=true` in `.env` if you want to run Whisper locally
 instead of calling the OpenAI API. Set `STT_PROVIDER=deepgram` with

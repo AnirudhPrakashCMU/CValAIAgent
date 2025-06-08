@@ -250,7 +250,8 @@ services:
       - orchestrator
     environment:
       - VITE_ORCHESTRATOR_WS_URL=ws://localhost:8000/v1/ws
-      - VITE_STT_HTTP_URL=http://speech_to_text:8001
+      # The browser accesses the speech-to-text service via the host
+      - VITE_STT_HTTP_URL=http://localhost:8001
       - NODE_ENV=development
     volumes:
       - ../../frontend:/app
