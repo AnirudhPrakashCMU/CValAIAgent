@@ -25,6 +25,18 @@ class Settings(BaseSettings):
         default="whisper-1",
         description="Name of the Whisper model to use (e.g., 'whisper-1' for API, or path for local).",
     )
+    WHISPER_USE_LOCAL: bool = Field(
+        default=False,
+        description="If true, run Whisper locally instead of using the OpenAI API.",
+    )
+    STT_PROVIDER: Literal["openai", "deepgram"] = Field(
+        default="openai",
+        description="Which provider to use for transcription when not running local Whisper.",
+    )
+    DEEPGRAM_API_KEY: SecretStr | None = Field(
+        default=None,
+        description="API key for Deepgram if STT_PROVIDER is set to 'deepgram'.",
+    )
     # WHISPER_LANGUAGE: Optional[str] = Field(
     #     default=None, description="Optional language code for transcription (e.g., 'en')."
     # )
