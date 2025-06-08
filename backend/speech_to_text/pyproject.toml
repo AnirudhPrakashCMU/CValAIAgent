@@ -7,6 +7,12 @@ license = "MIT"
 readme = "README.md"
 packages = [{include = "speech_to_text", from = "src"}]
 
+[[tool.poetry.source]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "supplemental"
+
+
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.111.0"
@@ -18,11 +24,16 @@ numpy = "^1.26.4"
 sounddevice = "^0.4.7" # For direct microphone access
 pydantic = "^2.8.2"
 python-dotenv = "^1.0.1"
-torch = "2.2.2"
-torchaudio = "2.2.2"
+torch = "2.3.0+cpu"
+torchaudio = "2.3.0+cpu"
 async-timeout = "^4.0.3" # Useful for managing asyncio tasks and timeouts
 structlog = "^24.1.0" # For structured logging
 pydantic-settings = "^2.3.4" # For configuration management
+# HTTP client used for alternative STT providers
+httpx = "^0.27.0"
+# openai-whisper was removed from the default dependencies to avoid pulling
+# in GPU-only Triton wheels. Install it manually and set WHISPER_USE_LOCAL=true
+# if you want to run Whisper locally instead of via the API.
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.2"
