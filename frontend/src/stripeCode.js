@@ -1,0 +1,45 @@
+export const STRIPE_GRADIENT_SNIPPET = `
+<html>
+    <head>
+        <title>Stripe Gradient</title>
+    </head>
+    <body>
+        <canvas id="gradient-canvas">
+        </canvas>
+        <h1>
+          Stripe Gradient Animation
+        </h1>
+    </body>
+</html>
+
+html,body {
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+#gradient-canvas {
+  width:100%;
+  height:100%;
+  --gradient-color-1: #fff; 
+  --gradient-color-2: #000; 
+  --gradient-color-3: #7038ff;  
+  --gradient-color-4: #ffba27;
+  z-index:0;
+}
+
+h1{
+  font-family: sohne-var, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 800;
+  font-size:4rem;
+  color: #343434;
+  position:absolute;
+  padding: 2rem;
+  top:0px;
+  z-index:100;
+  text-align:center;
+  width:100%;
+  mix-blend-mode: difference;
+}
+`;
