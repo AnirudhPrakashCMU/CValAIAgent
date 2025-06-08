@@ -21,6 +21,7 @@ MockPilot is a meeting copilot that listens to product discussions, detects UI/U
 | Testing strategy | [Docs/TestingStrategy.md](Docs/TestingStrategy.md) |
 | Development workflow | [Docs/DevelopmentWorkflow.md](Docs/DevelopmentWorkflow.md) |
 | Component implementation guide | [Docs/ComponentImplementationGuide.md](Docs/ComponentImplementationGuide.md) |
+| Usage guide | [Docs/UsageGuide.md](Docs/UsageGuide.md) |
 
 _Read the plan first, then dive into the architecture for service-level details._
 
@@ -28,7 +29,7 @@ _Read the plan first, then dive into the architecture for service-level details.
 
 ## 🚀 Key Features
 
-* **Live Speech-to-Text** – OpenAI Whisper streaming over WebSocket with VAD chunking.  
+* **Live Speech-to-Text** – Uses OpenAI Whisper or Deepgram via API with VAD chunking.
 * **Intent Extraction** – Regex fast-path plus GPT-4 JSON mode for design cues.  
 * **AI Code Generation** – GPT-4 returns type-checked JSX validated by Babel.  
 * **Sentiment Miner** – Semantic search on Reddit/Instagram via Weaviate + RoBERTa sentiment.  
@@ -74,6 +75,17 @@ your secrets:
 scripts/setup_env.sh  # creates `.env` from `.env-example` if needed
 # then edit `.env` to add your API keys
 ```
+The `make dev` command (and the setup script) pass this `.env` file to
+Docker Compose so your keys are loaded correctly.
+Most users can leave `STT_SERVICE_WS_URL` at its default
+(`ws://speech_to_text:8001/v1/stream`) which points to the speech-to-text
+container when using Docker Compose.
+`VITE_STT_HTTP_URL` must be reachable from **your browser**. When running the
+stack locally via Docker Compose, set it to `http://localhost:8001` so the
+frontend can POST recorded clips for transcription.
+Set `WHISPER_USE_LOCAL=true` in `.env` if you want to run Whisper locally
+instead of calling the OpenAI API. Set `STT_PROVIDER=deepgram` with
+`DEEPGRAM_API_KEY` if you prefer the Deepgram service.
 
 ---
 
@@ -85,12 +97,14 @@ git clone https://github.com/AnirudhPrakashCMU/CValAIAgent.git
 cd CValAIAgent
 
 # spin up full stack (backend, redis, weaviate, frontend)
-docker compose -f infra/docker/docker-compose.yml up --build
+docker compose --env-file .env -f infra/docker/docker-compose.yml up --build
 ```
 
-Open http://localhost:5173, allow microphone access, and say  
-“Let’s use a pill-shaped button with a hover bounce like Stripe.”  
+Open http://localhost:5173, allow microphone access, and say
+“Let’s use a pill-shaped button with a hover bounce like Stripe.”
 Watch the component and sentiment insights appear in real time!
+When you hit **Stop** the recorded clip is POSTed to the Speech‑to‑Text service
+(`$VITE_STT_HTTP_URL/v1/transcribe`) and its text appears under Transcripts.
 
 ---
 
