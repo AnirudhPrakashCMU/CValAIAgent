@@ -65,11 +65,15 @@ bootstrap:
 	fi
 	@if [ -f scripts/setup_env.sh ]; then bash scripts/setup_env.sh; fi
 	@echo "  -> Setting up pre-commit hooks..."
-	@if command -v pre-commit &> /dev/null; then \
-	        pre-commit install; \
+	@if command -v git &> /dev/null && [ -d .git ]; then \
+		if command -v pre-commit &> /dev/null; then \
+		pre-commit install; \
 	else \
-	        echo "pre-commit not found. Please install pre-commit: https://pre-commit.com/#install"; \
-	fi
+		echo "pre-commit not found. Please install pre-commit: https://pre-commit.com/#install"; \
+		fi; \
+	else \
+		echo "git not found or not a git repository. Skipping pre-commit hooks."; \
+		fi
 	@echo "✅ Bootstrap complete."
 
 # ==============================================================================
@@ -132,6 +136,7 @@ coverage:
 # DEVELOPMENT (DOCKER COMPOSE)
 # ==============================================================================
 DC_FILE := infra/docker/docker-compose.yml
+ENV_FILE := .env
 # Container names defined in docker-compose.yml so we can clean them up if
 # leftover containers exist from previous runs or different compose projects.
 DC_CONTAINERS := \
@@ -144,12 +149,12 @@ DC_CONTAINERS := \
 dev:
 	@echo "🚀 Starting MockPilot development environment (Docker Compose)..."
 	# Ensure any previous stack is stopped to avoid name conflicts
-	docker compose -f $(DC_FILE) down --volumes --remove-orphans || true
-# Remove lingering containers that might not belong to this compose project
+	docker compose --env-file $(ENV_FILE) -f $(DC_FILE) down --volumes --remove-orphans || true
+	# Remove lingering containers that might not belong to this compose project
 	-docker rm -f $(DC_CONTAINERS) 2>/dev/null || true
-# Remove leftover network to avoid name conflicts
+	# Remove leftover network to avoid name conflicts
 	-docker network rm mockpilot_network 2>/dev/null || true
-	docker compose -f $(DC_FILE) up --build -d # -d for detached mode
+	docker compose --env-file $(ENV_FILE) -f $(DC_FILE) up --build -d # -d for detached mode
 	@echo "🔗 Frontend: http://localhost:5173 (Vite default)"
 	@echo "🔗 Backend API (Orchestrator) might be on another port, check docker-compose logs."
 	@echo "ℹ️  Run make logs to see service outputs."
@@ -158,15 +163,15 @@ up: dev
 
 down:
 	@echo "🛑 Stopping MockPilot development environment..."
-	docker compose -f $(DC_FILE) down
+	        docker compose --env-file $(ENV_FILE) -f $(DC_FILE) down
 
 logs:
 	@echo "📜 Tailing logs from Docker Compose services..."
-	docker compose -f $(DC_FILE) logs -f
+	        docker compose --env-file $(ENV_FILE) -f $(DC_FILE) logs -f
 
 build:
 	@echo "🏗️ Building Docker images..."
-	docker compose -f $(DC_FILE) build
+	        docker compose --env-file $(ENV_FILE) -f $(DC_FILE) build
 
 # ==============================================================================
 # ADVANCED TESTS
