@@ -32,15 +32,24 @@ class WhisperEngine:
     def __init__(self, config: Optional[type(settings)] = None):
         self.config = config if config else settings
         self.model_name = self.config.WHISPER_MODEL_NAME
+        # Determine whether to run Whisper locally. If WHISPER_USE_LOCAL is set
+        # or the `whisper` package is installed in the environment, prefer the
+        # local model.
         self.use_local = self.config.WHISPER_USE_LOCAL
         self.provider = self.config.STT_PROVIDER
 
-        if self.use_local:
-            try:
-                import whisper  # type: ignore
-            except Exception as e:
-                logger.error(f"Local whisper requested but package not available: {e}")
-                raise
+        whisper_available = False
+        try:
+            import whisper  # type: ignore
+            whisper_available = True
+        except Exception:  # pragma: no cover - optional dependency
+            whisper_available = False
+
+        if self.use_local or (not self.config.WHISPER_USE_LOCAL and whisper_available):
+            if not whisper_available:
+                logger.error("WHISPER_USE_LOCAL=true but 'openai-whisper' package is not installed")
+                raise ImportError("openai-whisper package missing")
+            self.use_local = True
             self.local_model = whisper.load_model(self.model_name)
             logger.info(f"WhisperEngine using local model: {self.model_name}")
         elif self.provider == "openai":
