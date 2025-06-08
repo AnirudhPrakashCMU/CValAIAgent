@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReconnectingWebSocket from 'reconnecting-websocket';
+import DOMPurify from 'dompurify';
 
 const HTTP_URL = import.meta.env.VITE_ORCHESTRATOR_HTTP_URL || 'http://localhost:8000';
 const WS_BASE = import.meta.env.VITE_ORCHESTRATOR_WS_URL || 'ws://localhost:8000';
@@ -29,6 +30,7 @@ export default function App() {
   const [ws, setWs] = useState(null);
   const [transcripts, setTranscripts] = useState([]);
   const [componentCode, setComponentCode] = useState('');
+  const [intents, setIntents] = useState([]);
   const [insight, setInsight] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const recordingChunksRef = useRef([]);
@@ -43,6 +45,7 @@ export default function App() {
         const msg = JSON.parse(e.data);
         if (msg.kind === 'transcript') setTranscripts((t) => [...t, msg.text]);
         else if (msg.kind === 'component') setComponentCode(msg.jsx);
+        else if (msg.kind === 'intent') setIntents((i) => [...i, msg]);
         else if (msg.kind === 'insight') setInsight(msg);
         else if (msg.kind === 'error') console.error(msg.message);
       } catch (err) {
@@ -104,7 +107,7 @@ export default function App() {
           <audio src={audioUrl} controls className="w-full" />
         </div>
       )}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
           <h2 className="font-semibold mb-2">Transcripts</h2>
           <ul className="text-sm max-h-64 overflow-auto list-disc pl-5 space-y-1">
@@ -121,6 +124,14 @@ export default function App() {
             <p className="text-sm text-gray-500">Waiting for component...</p>
           )}
         </div>
+        <div>
+          <h2 className="font-semibold mb-2">Design Intents</h2>
+          <ul className="text-sm max-h-64 overflow-auto list-disc pl-5 space-y-1">
+            {intents.map((it, i) => (
+              <li key={i}>{it.component} - {it.styles.join(', ')}</li>
+            ))}
+          </ul>
+        </div>
       </div>
       {insight && (
         <div>
@@ -128,6 +139,15 @@ export default function App() {
           <pre className="bg-gray-100 p-2 text-xs overflow-auto">
             {JSON.stringify(insight, null, 2)}
           </pre>
+        </div>
+      )}
+      {componentCode && (
+        <div>
+          <h2 className="font-semibold mt-4 mb-2">Component Preview</h2>
+          <div
+            className="border p-4"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(componentCode) }}
+          />
         </div>
       )}
     </div>

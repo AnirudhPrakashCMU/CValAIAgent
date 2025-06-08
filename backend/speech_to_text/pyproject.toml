@@ -23,8 +23,8 @@ numpy = "^1.26.4"
 sounddevice = "^0.4.7" # For direct microphone access
 pydantic = "^2.8.2"
 python-dotenv = "^1.0.1"
-torch = {version = "2.3.0+cpu", source = "torchcpu"}
-torchaudio = {version = "2.3.0+cpu", source = "torchcpu"}
+torch = {version = "2.3.0", source = "torchcpu"}
+torchaudio = {version = "2.3.0", source = "torchcpu"}
 async-timeout = "^4.0.3" # Useful for managing asyncio tasks and timeouts
 structlog = "^24.1.0" # For structured logging
 pydantic-settings = "^2.3.4" # For configuration management

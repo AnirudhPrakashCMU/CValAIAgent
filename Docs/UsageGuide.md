@@ -33,7 +33,7 @@ This guide walks you through the exact steps to get MockPilot running on your ma
    python3 scripts/setup_and_run.py
    ```
 2. Wait for Docker images to build and services to start. The frontend will be available at `http://localhost:5173`.
-3. Open the URL in your browser, allow microphone access, then click **Start** to begin streaming audio. Speak your design ideas and watch transcripts and components appear live. When you click **Stop** the recorded clip appears so you can play back what was captured.
+3. Open the URL in your browser, allow microphone access, then click **Start** to begin streaming audio. Speak your design ideas and watch transcripts and components appear live. A panel on the right lists extracted design intents and a preview area renders the latest component. When you click **Stop** the recorded clip appears so you can play back what was captured.
 
 ## 4. Manual Setup
 
