@@ -24,7 +24,8 @@ This guide walks you through the exact steps to get MockPilot running on your ma
    works when running the stack via Docker Compose. Change it only if your
    speech-to-text service uses a different host or port. Set `WHISPER_USE_LOCAL=true`
    if you want the speech-to-text service to run Whisper locally instead of using
-   the OpenAI API (requires more resources but no API cost).
+   the OpenAI API. Alternatively set `STT_PROVIDER=deepgram` and provide
+   `DEEPGRAM_API_KEY` if you prefer Deepgram for transcription.
 
 ## 3. One‑Command Startup (Recommended)
 

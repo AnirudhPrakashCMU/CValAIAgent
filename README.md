@@ -29,7 +29,7 @@ _Read the plan first, then dive into the architecture for service-level details.
 
 ## 🚀 Key Features
 
-* **Live Speech-to-Text** – OpenAI Whisper streaming over WebSocket with VAD chunking.  
+* **Live Speech-to-Text** – Uses OpenAI Whisper or Deepgram via API with VAD chunking.
 * **Intent Extraction** – Regex fast-path plus GPT-4 JSON mode for design cues.  
 * **AI Code Generation** – GPT-4 returns type-checked JSX validated by Babel.  
 * **Sentiment Miner** – Semantic search on Reddit/Instagram via Weaviate + RoBERTa sentiment.  
@@ -81,7 +81,8 @@ Most users can leave `STT_SERVICE_WS_URL` at its default
 (`ws://speech_to_text:8001/v1/stream`) which points to the speech-to-text
 container when using Docker Compose.
 Set `WHISPER_USE_LOCAL=true` in `.env` if you want to run Whisper locally
-instead of calling the OpenAI API.
+instead of calling the OpenAI API. Set `STT_PROVIDER=deepgram` with
+`DEEPGRAM_API_KEY` if you prefer the Deepgram service.
 
 ---
 

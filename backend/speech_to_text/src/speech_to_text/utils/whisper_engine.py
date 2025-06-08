@@ -4,6 +4,8 @@ import logging
 import wave
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
+import httpx
+
 from dotenv import load_dotenv
 from openai import APIConnectionError, APIError, APITimeoutError, AsyncOpenAI
 
@@ -31,6 +33,7 @@ class WhisperEngine:
         self.config = config if config else settings
         self.model_name = self.config.WHISPER_MODEL_NAME
         self.use_local = self.config.WHISPER_USE_LOCAL
+        self.provider = self.config.STT_PROVIDER
 
         if self.use_local:
             try:
@@ -40,12 +43,19 @@ class WhisperEngine:
                 raise
             self.local_model = whisper.load_model(self.model_name)
             logger.info(f"WhisperEngine using local model: {self.model_name}")
-        else:
+        elif self.provider == "openai":
             if not self.config.OPENAI_API_KEY or not self.config.OPENAI_API_KEY.get_secret_value():
                 logger.error("OpenAI API key is not configured.")
                 raise ValueError("OPENAI_API_KEY must be set and not empty when not using local Whisper.")
             self.client = AsyncOpenAI(api_key=self.config.OPENAI_API_KEY.get_secret_value())
             logger.info(f"WhisperEngine using OpenAI API model: {self.model_name}")
+        elif self.provider == "deepgram":
+            if not self.config.DEEPGRAM_API_KEY or not self.config.DEEPGRAM_API_KEY.get_secret_value():
+                logger.error("Deepgram API key is not configured.")
+                raise ValueError("DEEPGRAM_API_KEY must be set when STT_PROVIDER=deepgram")
+            logger.info("WhisperEngine using Deepgram API")
+        else:
+            raise ValueError(f"Unsupported STT_PROVIDER: {self.provider}")
 
         self.sample_rate = self.config.AUDIO_SAMPLE_RATE
         self.channels = self.config.AUDIO_CHANNELS  # Should be 1 for Whisper
@@ -56,7 +66,8 @@ class WhisperEngine:
         self.semaphore = asyncio.Semaphore(self.max_concurrent_tasks)
 
         logger.info(
-            f"WhisperEngine initialized. Local: {self.use_local}, model: {self.model_name}, "
+            "WhisperEngine initialized. "
+            f"Local: {self.use_local}, provider: {self.provider}, model: {self.model_name}, "
             f"max concurrent tasks: {self.max_concurrent_tasks}"
         )
 
@@ -161,6 +172,59 @@ class WhisperEngine:
             "words": result.get("words"),
         }
 
+    async def _transcribe_single_segment_deepgram(
+        self, audio_segment_bytes: bytes, language: Optional[str] = None
+    ) -> Optional[Dict[str, Any]]:
+        """Transcribes a single audio segment using Deepgram's API."""
+        if not audio_segment_bytes:
+            logger.warning("Attempted to transcribe empty audio segment.")
+            return None
+
+        if not self.config.DEEPGRAM_API_KEY:
+            logger.error("Deepgram API key is not configured.")
+            return None
+
+        wav_bytes = self._create_in_memory_wav(audio_segment_bytes).getvalue()
+        headers = {
+            "Authorization": f"Token {self.config.DEEPGRAM_API_KEY.get_secret_value()}",
+            "Content-Type": "audio/wav",
+        }
+        params = {"model": "nova"}
+        if language:
+            params["language"] = language
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                resp = await client.post(
+                    "https://api.deepgram.com/v1/listen",
+                    headers=headers,
+                    params=params,
+                    content=wav_bytes,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+                text = (
+                    data.get("results", {})
+                    .get("channels", [{}])[0]
+                    .get("alternatives", [{}])[0]
+                    .get("transcript", "")
+                )
+                return {
+                    "text": text,
+                    "language": language,
+                    "duration": data.get("duration"),
+                    "segments": None,
+                    "words": None,
+                }
+        except httpx.HTTPError as e:
+            logger.error(f"Deepgram API error: {e}")
+        except Exception as e:
+            logger.error(
+                f"Unexpected error during Deepgram transcription: {e}",
+                exc_info=True,
+            )
+        return None
+
     async def transcribe_stream(
         self,
         vad_segment_provider: AsyncGenerator[bytes, None],
@@ -181,6 +245,10 @@ class WhisperEngine:
                 try:
                     if self.use_local:
                         return await self._transcribe_single_segment_local(
+                            segment_bytes, language
+                        )
+                    elif self.provider == "deepgram":
+                        return await self._transcribe_single_segment_deepgram(
                             segment_bytes, language
                         )
                     else:
